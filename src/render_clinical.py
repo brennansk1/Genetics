@@ -1,29 +1,110 @@
 import streamlit as st
 import pandas as pd
 from snp_data import recessive_snps, cancer_snps, cardiovascular_snps, neuro_snps, mito_snps, protective_snps, ancestry_panels, acmg_sf_variants
+from api_functions import get_clinvar_data, get_api_health_status
+from local_data_utils import get_clinvar_pathogenic_variants_local
 
 def render_clinical_risk(dna_data):
     st.header("Module 1: Clinical Risk & Carrier Status")
     st.write("This module will identify high-impact genetic variants with established clinical significance.")
 
     st.subheader("1.1. Pathogenic Variant Screener")
-    clinvar_tsv_path = "clinvar_pathogenic_variants.tsv"
+
+    # API Health Status
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        health_status = get_api_health_status()
+        clinvar_status = health_status.get('clinvar', {}).get('status', 'unknown')
+
+        if clinvar_status == 'healthy':
+            st.success("✅ ClinVar API is online and responding")
+        elif clinvar_status == 'unhealthy':
+            st.warning("⚠️ ClinVar API is currently unavailable - using local fallback data")
+        else:
+            st.info("🔄 Checking ClinVar API status...")
+
+    with col2:
+        if st.button("🔄 Refresh API Status", key="refresh_clinvar_status"):
+            with st.spinner("Checking API status..."):
+                health_status = get_api_health_status()
+                clinvar_status = health_status.get('clinvar', {}).get('status', 'unknown')
+                st.rerun()
+
+    # Data source selection
+    data_source = st.radio(
+        "Data Source:",
+        ["Live ClinVar API (Recommended)", "Local ClinVar Database"],
+        index=0 if clinvar_status == 'healthy' else 1,
+        key="clinvar_data_source"
+    )
+
+    use_live_data = data_source == "Live ClinVar API (Recommended)"
+
     if st.button("Run Pathogenic Variant Screener"):
-        try:
-            clinvar_df = pd.read_csv(clinvar_tsv_path, sep='\t', dtype={'rsid': str})
+        with st.spinner("Analyzing variants for clinical significance..."):
+            try:
+                if use_live_data and clinvar_status == 'healthy':
+                    # Use live ClinVar API
+                    rsids_to_check = dna_data.index.tolist()
+                    clinvar_results = get_clinvar_data(rsids_to_check, use_cache=True)
 
-            # Reset index to get 'rsid' as a column and ensure it's a string
-            dna_data_reset = dna_data.reset_index()
-            dna_data_reset['rsid'] = dna_data_reset['rsid'].astype(str)
+                    if clinvar_results:
+                        pathogenic_variants = []
+                        for rsid, significance in clinvar_results.items():
+                            if significance and ('pathogenic' in significance.lower() or 'likely pathogenic' in significance.lower()):
+                                if rsid in dna_data.index:
+                                    row = dna_data.loc[rsid]
+                                    pathogenic_variants.append({
+                                        'rsID': rsid,
+                                        'Chromosome': row.get('chromosome', 'Unknown'),
+                                        'Position': row.get('position', 'Unknown'),
+                                        'Genotype': row['genotype'],
+                                        'Clinical Significance': significance,
+                                        'Data Source': 'Live ClinVar API'
+                                    })
 
-            merged_df = dna_data_reset.merge(clinvar_df, on='rsid')
-            if not merged_df.empty:
-                st.write("Pathogenic or Likely Pathogenic variants found in your data:")
-                st.dataframe(merged_df[['rsid', 'chromosome', 'position', 'genotype', 'CLNSIG']])
-            else:
-                st.success("No pathogenic or likely pathogenic variants from the ClinVar file were found in your data.")
-        except FileNotFoundError:
-            st.error(f"ClinVar TSV file not found at {clinvar_tsv_path}. Please run the analysis from the command line first to generate this file.")
+                        if pathogenic_variants:
+                            st.warning("⚠️ Pathogenic or Likely Pathogenic variants found in your data:")
+                            results_df = pd.DataFrame(pathogenic_variants)
+                            st.dataframe(results_df)
+
+                            # Add interpretation guidance
+                            st.info("""
+                            **Clinical Interpretation:**
+                            - **Pathogenic**: Disease-causing variant
+                            - **Likely Pathogenic**: Probably disease-causing
+                            - Consult with a genetic counselor or healthcare provider for interpretation
+                            - Consider confirmatory testing in a clinical laboratory
+                            """)
+                        else:
+                            st.success("✅ No pathogenic or likely pathogenic variants detected in ClinVar database.")
+                    else:
+                        st.error("Failed to retrieve data from ClinVar API. Please try again or use local data.")
+
+                else:
+                    # Use local fallback
+                    st.info("Using local ClinVar database...")
+                    clinvar_df = get_clinvar_pathogenic_variants_local()
+
+                    if clinvar_df is not None:
+                        # Reset index to get 'rsid' as a column and ensure it's a string
+                        dna_data_reset = dna_data.reset_index()
+                        dna_data_reset['rsid'] = dna_data_reset['rsid'].astype(str)
+
+                        merged_df = dna_data_reset.merge(clinvar_df, on='rsid')
+                        if not merged_df.empty:
+                            st.warning("⚠️ Pathogenic or Likely Pathogenic variants found in your data (Local Data):")
+                            display_df = merged_df[['rsid', 'chromosome', 'position', 'genotype', 'CLNSIG']].copy()
+                            display_df['Data Source'] = 'Local ClinVar Database'
+                            st.dataframe(display_df)
+                        else:
+                            st.success("✅ No pathogenic or likely pathogenic variants from the local ClinVar database were found in your data.")
+                    else:
+                        st.error("Local ClinVar database not available. Please check data files.")
+
+            except Exception as e:
+                st.error(f"Error during pathogenic variant screening: {str(e)}")
+                st.info("Try switching to local data source or contact support.")
 
     st.subheader("1.2. Recessive Carrier Status Report")
     if st.button("Run Recessive Carrier Status Report"):

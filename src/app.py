@@ -1,19 +1,20 @@
-import sys
-sys.path.append('src')
-
-import streamlit as st
 import streamlit as st
 import pandas as pd
 import os
 import tempfile
-from src.utils import parse_dna_file
-from src.render_clinical import render_clinical_risk
-from src.render_pgx import render_pharmacogenomics
-from src.render_prs import render_prs_dashboard
-from src.render_wellness import render_wellness_profile
-from src.render_advanced import render_advanced_analytics
-from src.render_data_portability import render_data_portability
-from src.pdf_generator import generate_enhanced_pdf_report
+import sys
+
+# Add parent directory to path for imports
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from utils import parse_dna_file
+from render_clinical import render_clinical_risk
+from render_pgx import render_pharmacogenomics
+from render_prs import render_prs_dashboard
+from render_wellness import render_wellness_profile
+from render_advanced import render_advanced_analytics
+from render_data_portability import render_data_portability
+from src.pdf_generator.main import generate_enhanced_pdf_report
 
 def render_pdf_generator(dna_data):
     """Render the enhanced PDF report generator interface."""

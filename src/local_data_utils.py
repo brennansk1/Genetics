@@ -10,7 +10,7 @@ import os
 from typing import Dict, List, Optional, Tuple
 
 # Path to datasets directory
-DATASETS_DIR = os.path.join(os.path.dirname(__file__), 'datasets')
+DATASETS_DIR = os.path.join(os.path.dirname(__file__), '..', 'data', 'datasets')
 
 class LocalGeneticData:
     """Class to manage local genetic datasets."""
@@ -172,6 +172,22 @@ def get_snp_info_local(rsid: str) -> Optional[Dict]:
 def get_population_frequencies_local(rsid: str) -> Optional[pd.DataFrame]:
     """Convenience function to get population frequencies."""
     return local_data.get_population_frequencies(rsid)
+
+def get_clinvar_pathogenic_variants_local() -> Optional[pd.DataFrame]:
+    """Get local ClinVar pathogenic variants database."""
+    clinvar_path = os.path.join(os.path.dirname(__file__), 'clinvar_pathogenic_variants.tsv')
+    try:
+        if os.path.exists(clinvar_path):
+            return pd.read_csv(clinvar_path, sep='\t', dtype={'rsid': str})
+        else:
+            # Try to find it in the root directory
+            clinvar_path = os.path.join(os.path.dirname(__file__), '..', 'clinvar_pathogenic_variants.tsv')
+            if os.path.exists(clinvar_path):
+                return pd.read_csv(clinvar_path, sep='\t', dtype={'rsid': str})
+    except Exception as e:
+        print(f"Error loading ClinVar local data: {e}")
+
+    return None
 
 def load_local_datasets():
     """Load all local datasets."""

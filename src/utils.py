@@ -136,8 +136,12 @@ def analyze_wellness_snps(dna_data):
     results = {}
 
     for rsid, info in snps_to_analyze.items():
-        user_genotype = dna_data[dna_data['rsid'] == rsid]
-        if not user_genotype.empty:
+        # Check if rsid is in the index (processed data) or as a column (raw data)
+        if rsid in dna_data.index:
+            genotype = dna_data.loc[rsid, 'genotype']
+            results[rsid] = {"name": info["name"], "gene": info["gene"], "genotype": genotype, "interp": info.get("interp", {})}
+        elif 'rsid' in dna_data.columns and rsid in dna_data['rsid'].values:
+            user_genotype = dna_data[dna_data['rsid'] == rsid]
             genotype = user_genotype.iloc[0]['genotype']
             results[rsid] = {"name": info["name"], "gene": info["gene"], "genotype": genotype, "interp": info.get("interp", {})}
         else:

@@ -345,3 +345,15 @@ def analyze_ld_patterns(snp_list: List[str], genotypes: Dict[str, str]) -> Dict[
 def identify_compound_heterozygotes(gene_snps: Dict[str, List[str]], genotypes: Dict[str, str]) -> Dict[str, List[str]]:
     """Convenience function for compound heterozygote identification."""
     return snp_analyzer.identify_compound_heterozygotes(gene_snps, genotypes)
+
+def calculate_genetic_distance(pos1: int, pos2: int, chromosome: str) -> float:
+    """Convenience function for genetic distance calculation."""
+    return snp_analyzer.calculate_genetic_distance(pos1, pos2, chromosome)
+
+def extract_sequence_context(chromosome: str, position: int, flank_size: int = 50) -> Optional[str]:
+    """Convenience function for sequence context extraction."""
+    return snp_analyzer.extract_sequence_context(chromosome, position, flank_size)
+
+def analyze_snp_conservation(chromosome: str, position: int) -> Dict[str, Union[str, float]]:
+    """Convenience function for SNP conservation analysis."""
+    return snp_analyzer.analyze_snp_conservation(chromosome, position)

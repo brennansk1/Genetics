@@ -3,7 +3,39 @@
 *.txt
 *.csv
 *.tsv
+*.vcf
+*.vcf.gz
+*.bcf
+*.bed
+*.bim
+*.fam
 results/
+temp/
+tmp/
+*.pdf
+*.zip
+*.tar.gz
+
+# Genetic Data Files
+*.23andme.txt
+*ancestry*.txt
+*myheritage*.txt
+*livingdna*.txt
+*familytreedna*.txt
+*nebula*.txt
+
+# Cache and Temporary Files
+cache/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
 
 # Python
 __pycache__/
@@ -135,3 +167,36 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Project-specific caches
+data/cache/
+data/temp/
+*.fasta
+*.fastq
+*.sam
+*.bam
+*.cram
+*.gff
+*.gtf
+*.bedgraph
+*.wig
+*.bigwig
+*.narrowpeak
+*.broadpeak
+
+# API Keys and Secrets
+.env.local
+.env.production
+.env.development
+secrets.json
+config/secrets.yaml
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Log files
+logs/
+*.log
+debug_*.json

@@ -29,6 +29,11 @@ This directory contains offline genetic datasets that can be used for enhanced a
 - Fields: gene_symbol, pathway_id, pathway_name, source
 - Source: KEGG and Reactome (pre-downloaded)
 
+### 6. Age-Specific Risk Data (age_specific_risks.tsv)
+- Contains age-stratified incidence rates for common conditions
+- Fields: condition, sex, age_start, age_end, incidence_rate, source
+- Source: SEER, CDC NHANES, Alzheimer Association (pre-processed)
+
 ## Usage
 
 These datasets can be loaded locally using pandas:
@@ -65,6 +70,12 @@ All data has been sourced from real genetic databases and pre-processed for offl
 - **Last Updated:** Based on 1000 Genomes Project Phase 3 (2015)
 - **Fields:** rsid, population, allele, frequency
 
+### Age-Specific Risk Data (age_specific_risks.tsv)
+- **Source:** SEER Cancer Statistics, CDC NHANES, Alzheimer Association
+- **Content:** Age-stratified incidence rates for 6 major conditions (breast cancer, prostate cancer, colorectal cancer, coronary artery disease, type 2 diabetes, Alzheimer's disease)
+- **Last Updated:** Based on 2020 epidemiological data
+- **Fields:** condition, sex, age_start, age_end, incidence_rate, source
+
 ## Data Processing
 
 The datasets have been:
@@ -88,6 +99,9 @@ If using this data in publications, please cite the original sources:
 - dbSNP: Sherry et al. (2001) Nucleic Acids Research
 - ClinVar: Landrum et al. (2018) Nucleic Acids Research
 - 1000 Genomes: Auton et al. (2015) Nature
+- SEER: National Cancer Institute Surveillance, Epidemiology, and End Results Program
+- CDC NHANES: Centers for Disease Control and Prevention National Health and Nutrition Examination Survey
+- Alzheimer Association: 2020 Alzheimer Disease Facts and Figures
 
 ## License
 

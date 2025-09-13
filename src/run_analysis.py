@@ -190,9 +190,19 @@ def process_dna_file(file_path, build, liftover_chain_path=None):
         if line.startswith('rsid'):
             data_start_line = i
             break
-            
-    df = pd.read_csv(io.StringIO('\n'.join(lines[data_start_line:])), sep='\t', header=0, comment='#', dtype={'rsid': str}).dropna()
-    
+
+    print(f"DEBUG: Found header at line {data_start_line}: {lines[data_start_line] if data_start_line < len(lines) else 'NOT FOUND'}")
+
+    df = pd.read_csv(io.StringIO('\n'.join(lines[data_start_line:])), sep='\t', header=0, comment='#', dtype={'rsid': str})
+
+    print(f"DEBUG: After CSV read - columns: {list(df.columns)}")
+    print(f"DEBUG: DataFrame shape: {df.shape}")
+    print(f"DEBUG: First few rsid values: {df['rsid'].head().tolist() if 'rsid' in df.columns else 'NO RSID COLUMN'}")
+
+    # Drop rows with NaN values, but be careful not to drop rsid
+    df.dropna(subset=['rsid'], inplace=True)  # Only drop if rsid is NaN
+    print(f"DEBUG: After dropping NaN rsid - shape: {df.shape}")
+
     # AncestryDNA files have 'allele1' and 'allele2' instead of 'genotype'
     # Combine them to create a 'genotype' column
     if 'allele1' in df.columns and 'allele2' in df.columns:
@@ -203,11 +213,19 @@ def process_dna_file(file_path, build, liftover_chain_path=None):
         # Fallback if the file format is different and 'genotype' is expected
         df.rename(columns={'rsid': 'rsid', 'chromosome': 'chromosome', 'position': 'position', 'genotype': 'genotype'}, inplace=True)
 
+    print(f"DEBUG: After genotype processing - columns: {list(df.columns)}")
+
     df['position'] = pd.to_numeric(df['position'], errors='coerce')
     df.dropna(subset=['position'], inplace=True)
     df['position'] = df['position'].astype(int)
+
+    print(f"DEBUG: Before setting index - rsid column exists: {'rsid' in df.columns}")
+    print(f"DEBUG: rsid values sample: {df['rsid'].head().tolist() if 'rsid' in df.columns else 'NO RSID'}")
+
     df.set_index('rsid', inplace=True)
     print(f"Successfully loaded {len(df)} SNPs.")
+    print(f"DEBUG: Final DataFrame index name: {df.index.name}")
+    print(f"DEBUG: Final DataFrame columns: {list(df.columns)}")
 
     if build.upper() == 'GRCH38':
         if not liftover_chain_path or not os.path.exists(liftover_chain_path):
@@ -221,10 +239,10 @@ def process_dna_file(file_path, build, liftover_chain_path=None):
             new_coords = lo.convert_coordinate(chrom, pos)
             if new_coords:
                 converted_data.append({'rsid': index, 'chromosome': str(row['chromosome']), 'position': new_coords[0][1], 'genotype': row['genotype']})
-        
+
         df = pd.DataFrame(converted_data).set_index('rsid')
         print(f"Liftover successful. {len(df)} SNPs converted to GRCh37.")
-    
+
     return df
 
 # --- Analysis Modules ---
@@ -483,7 +501,8 @@ def generate_pdf_report(report_data, results_dir):
 
     try:
         doc.build(story)
-        print(f"Successfully generated PDF report: {os.path.join(results_dir, \"Genomic_Health_Report.pdf\")}")
+        pdf_path = os.path.join(results_dir, "Genomic_Health_Report.pdf")
+        print(f"Successfully generated PDF report: {pdf_path}")
     except Exception as e:
         print(f"Error generating PDF: {e}")
 

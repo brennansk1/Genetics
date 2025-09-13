@@ -115,27 +115,14 @@ acmg_sf_variants = {
     'rs41307846': {'gene': 'APC', 'condition': 'Familial Adenomatous Polyposis'},
     'rs180177104': {'gene': 'BMPR1A', 'condition': 'Juvenile Polyposis Syndrome'},
     'rs41310927': {'gene': 'SMAD4', 'condition': 'Juvenile Polyposis Syndrome'},
-    'rs121434592': {'gene': 'PTEN', 'condition': 'PTEN Hamartoma Tumor Syndrome'},
+    'rs121434592': {'gene': 'PTEN', 'condition': 'PTEN Hamartoma Tumor Syndrome / Cowden Syndrome'},
     'rs587782044': {'gene': 'TP53', 'condition': 'Li-Fraumeni Syndrome'},
-    'rs121434592': {'gene': 'PTEN', 'condition': 'Cowden Syndrome'},
     'rs121913333': {'gene': 'WT1', 'condition': 'Wilms Tumor'},
     'rs121912651': {'gene': 'NF2', 'condition': 'Neurofibromatosis Type 2'},
     'rs80338902': {'gene': 'PALB2', 'condition': 'Fanconi Anemia'},
-    'rs121913279': {'gene': 'BRIP1', 'condition': 'Fanconi Anemia'},
-    'rs200796965': {'gene': 'RAD51C', 'condition': 'Fanconi Anemia'},
-    'rs200796965': {'gene': 'RAD51D', 'condition': 'Fanconi Anemia'},
-    'rs80358971': {'gene': 'FANCI', 'condition': 'Fanconi Anemia'},
-    'rs80358971': {'gene': 'FANCD2', 'condition': 'Fanconi Anemia'},
-    'rs80358971': {'gene': 'FANCG', 'condition': 'Fanconi Anemia'},
-    'rs80358971': {'gene': 'FANCA', 'condition': 'Fanconi Anemia'},
-    'rs80358971': {'gene': 'FANCC', 'condition': 'Fanconi Anemia'},
-    'rs80358971': {'gene': 'FANCE', 'condition': 'Fanconi Anemia'},
-    'rs80358971': {'gene': 'FANCF', 'condition': 'Fanconi Anemia'},
-    'rs80358971': {'gene': 'BRCA1', 'condition': 'Fanconi Anemia'},
-    'rs80358971': {'gene': 'BRCA2', 'condition': 'Fanconi Anemia'},
-    'rs80358971': {'gene': 'RAD51', 'condition': 'Fanconi Anemia'},
-    'rs80358971': {'gene': 'ATM', 'condition': 'Ataxia-Telangiectasia'},
-    'rs121913279': {'gene': 'NBN', 'condition': 'Nijmegen Breakage Syndrome'},
+    'rs121913279': {'gene': 'BRIP1/NBN', 'condition': 'Fanconi Anemia / Nijmegen Breakage Syndrome'},
+    'rs200796965': {'gene': 'RAD51C/RAD51D', 'condition': 'Fanconi Anemia'},
+    'rs80358971': {'gene': 'FANCI/FANCD2/FANCG/FANCA/FANCC/FANCE/FANCF/BRCA1/BRCA2/RAD51/ATM', 'condition': 'Fanconi Anemia / Ataxia-Telangiectasia'},
     'rs80358971': {'gene': 'FANCM', 'condition': 'Fanconi Anemia'},
     'rs80358971': {'gene': 'SLX4', 'condition': 'Fanconi Anemia'},
     'rs80358971': {'gene': 'ERCC4', 'condition': 'Fanconi Anemia'},
@@ -173,6 +160,113 @@ pgx_snps = {
     'rs4149056': {'gene': 'SLCO1B1', 'relevance': 'Statins (e.g., Simvastatin)', 'interp': {'TT': 'Normal', 'CT': 'Intermediate', 'CC': 'Poor'}}
 }
 
+# Star allele definitions for comprehensive PGx analysis
+star_allele_definitions = {
+    'CYP2C19': {
+        '*1': {'haplotypes': [], 'function': 'Normal', 'description': 'Reference haplotype'},
+        '*2': {'haplotypes': ['rs4244285:A'], 'function': 'No function', 'description': '681G>A'},
+        '*3': {'haplotypes': ['rs4986893:A'], 'function': 'No function', 'description': '636G>A'},
+        '*17': {'haplotypes': ['rs12248560:T'], 'function': 'Increased function', 'description': '-806C>T'},
+        '*4': {'haplotypes': ['rs28399504:A'], 'function': 'No function', 'description': '1A>C'},
+        '*5': {'haplotypes': ['rs56337013:C'], 'function': 'No function', 'description': '1297C>T'},
+        '*6': {'haplotypes': ['rs72552267:A'], 'function': 'No function', 'description': '395G>A'},
+        '*7': {'haplotypes': ['rs72558186:A'], 'function': 'No function', 'description': '19294T>A'},
+        '*8': {'haplotypes': ['rs41291556:T'], 'function': 'No function', 'description': '358T>C'},
+        '*9': {'haplotypes': ['rs17884712:G'], 'function': 'No function', 'description': '431G>A'},
+        '*10': {'haplotypes': ['rs6413438:T'], 'function': 'No function', 'description': '680C>T'},
+    },
+    'CYP2D6': {
+        '*1': {'haplotypes': [], 'function': 'Normal', 'description': 'Reference haplotype'},
+        '*3': {'haplotypes': ['rs35742686:delA'], 'function': 'No function', 'description': '2549delA'},
+        '*4': {'haplotypes': ['rs3892097:A', 'rs1065852:T', 'rs28371725:C'], 'function': 'No function', 'description': '1846G>A + 100C>T + 4180G>C'},
+        '*5': {'haplotypes': ['deletion'], 'function': 'No function', 'description': 'Gene deletion'},
+        '*6': {'haplotypes': ['rs5030655:delT', 'rs3892097:A'], 'function': 'No function', 'description': '1707delT + 1846G>A'},
+        '*10': {'haplotypes': ['rs1065852:T', 'rs1135840:C'], 'function': 'Decreased function', 'description': '100C>T + 1661G>C'},
+        '*17': {'haplotypes': ['rs28371706:T', 'rs16947:T', 'rs28371725:C'], 'function': 'Decreased function', 'description': '1023C>T + 886C>T + 4180G>C'},
+        '*41': {'haplotypes': ['rs28371725:C', 'rs16947:T', 'rs267608319:T'], 'function': 'Decreased function', 'description': '4180G>C + 886C>T + 2988G>A'},
+    },
+    'CYP2C9': {
+        '*1': {'haplotypes': [], 'function': 'Normal', 'description': 'Reference haplotype'},
+        '*2': {'haplotypes': ['rs1799853:C'], 'function': 'Decreased function', 'description': '430C>T'},
+        '*3': {'haplotypes': ['rs1057910:A'], 'function': 'Decreased function', 'description': '1075A>C'},
+    },
+    'TPMT': {
+        '*1': {'haplotypes': [], 'function': 'Normal', 'description': 'Reference haplotype'},
+        '*2': {'haplotypes': ['rs1800462:A'], 'function': 'No function', 'description': '238G>C'},
+        '*3A': {'haplotypes': ['rs1800460:A', 'rs1142345:T'], 'function': 'No function', 'description': '460G>A + 719A>G'},
+        '*3B': {'haplotypes': ['rs1800460:A'], 'function': 'No function', 'description': '460G>A'},
+        '*3C': {'haplotypes': ['rs1142345:T'], 'function': 'No function', 'description': '719A>G'},
+    },
+    'DPYD': {
+        '*1': {'haplotypes': [], 'function': 'Normal', 'description': 'Reference haplotype'},
+        '*2A': {'haplotypes': ['rs3918290:T'], 'function': 'No function', 'description': '1905+1G>A'},
+        '*13': {'haplotypes': ['rs55886062:A'], 'function': 'Decreased function', 'description': '1679T>G'},
+    }
+}
+
+# CPIC dosing guidelines
+cpic_guidelines = {
+    'CYP2C19': {
+        'clopidogrel': {
+            'Poor': 'Avoid clopidogrel due to lack of efficacy; use alternative antiplatelet therapy (e.g., ticagrelor, prasugrel)',
+            'Intermediate': 'Standard dose with platelet function testing',
+            'Normal': 'Standard dose',
+            'Rapid': 'Standard dose',
+            'Ultrarapid': 'Standard dose'
+        },
+        'citalopram': {
+            'Poor': 'Reduce dose by 50%',
+            'Intermediate': 'Use with caution',
+            'Normal': 'Standard dose',
+            'Rapid': 'Standard dose',
+            'Ultrarapid': 'Standard dose'
+        }
+    },
+    'CYP2D6': {
+        'codeine': {
+            'Poor': 'Avoid use',
+            'Intermediate': 'Use with caution',
+            'Normal': 'Standard dose',
+            'Rapid': 'Standard dose',
+            'Ultrarapid': 'Avoid use - risk of toxicity'
+        },
+        'tamoxifen': {
+            'Poor': 'Alternative therapy',
+            'Intermediate': 'Alternative therapy',
+            'Normal': 'Standard dose',
+            'Rapid': 'Standard dose',
+            'Ultrarapid': 'Standard dose'
+        }
+    },
+    'CYP2C9': {
+        'warfarin': {
+            'Poor': 'Reduce initial dose by 30-50%',
+            'Intermediate': 'Reduce initial dose by 20-30%',
+            'Normal': 'Standard dose',
+            'Rapid': 'Standard dose',
+            'Ultrarapid': 'Standard dose'
+        }
+    },
+    'TPMT': {
+        'azathioprine': {
+            'Poor': 'Reduce dose by 90%',
+            'Intermediate': 'Reduce dose by 50%',
+            'Normal': 'Standard dose',
+            'Rapid': 'Standard dose',
+            'Ultrarapid': 'Standard dose'
+        }
+    },
+    'DPYD': {
+        'fluorouracil': {
+            'Poor': 'Avoid use or reduce dose by 50%',
+            'Intermediate': 'Reduce dose by 25%',
+            'Normal': 'Standard dose',
+            'Rapid': 'Standard dose',
+            'Ultrarapid': 'Standard dose'
+        }
+    }
+}
+
 adverse_reaction_snps = {
     'rs4149056': {'gene': 'SLCO1B1', 'relevance': 'Simvastatin Myopathy Risk', 'interp': {'TT': 'Normal risk', 'CT': 'Increased risk', 'CC': 'High risk'}},
     'rs3918290': {'gene': 'HLA-B*15:02', 'relevance': 'Carbamazepine SJS Risk', 'interp': {'GG': 'Normal', 'GT': 'Significantly Increased Risk', 'TT': 'Significantly Increased Risk'}},
@@ -180,7 +274,8 @@ adverse_reaction_snps = {
     'rs1061235': {'gene': 'HLA-A*31:01', 'relevance': 'Carbamazepine SJS Risk', 'interp': {'GG': 'Normal', 'GA': 'Carrier', 'AA': 'At risk'}}
 }
 
-prs_models = {
+# Legacy PRS models for backward compatibility
+legacy_prs_models = {
     "Coronary Artery Disease": {'rsid': ['rs10757274', 'rs10757278', 'rs1333049', 'rs2383206'], 'effect_allele': ['G', 'G', 'C', 'A'], 'effect_weight': [0.177, 0.198, 0.126, 0.106]},
     "Type 2 Diabetes": {'rsid': ['rs7903146', 'rs13266634', 'rs7754840', 'rs10811661', 'rs4506565'], 'effect_allele': ['T', 'C', 'C', 'T', 'T'], 'effect_weight': [0.31, 0.14, 0.11, 0.22, 0.12]},
     "Atrial Fibrillation": {'rsid': ['rs2200733', 'rs10033464', 'rs6817105'], 'effect_allele': ['T', 'T', 'C'], 'effect_weight': [0.45, 0.30, 0.22]},
@@ -197,6 +292,300 @@ prs_models = {
     "Osteoporosis": {'rsid': ['rs3736228', 'rs2941740'], 'effect_allele': ['T', 'A'], 'effect_weight': [0.20, 0.15]},
     "Asthma": {'rsid': ['rs2305480', 'rs4950928'], 'effect_allele': ['G', 'C'], 'effect_weight': [0.18, 0.22]}
 }
+
+# Genome-wide PRS Models with PGS Catalog Integration
+prs_models = {
+    # Cardiometabolic Diseases
+    "Coronary Artery Disease": {
+        'simple_model': {
+            'rsid': ['rs10757274', 'rs10757278', 'rs1333049', 'rs2383206'],
+            'effect_allele': ['G', 'G', 'C', 'A'],
+            'effect_weight': [0.177, 0.198, 0.126, 0.106]
+        },
+        'genomewide_models': [
+            {'pgs_id': 'PGS000018', 'description': 'CAD metaGRS'},
+            {'pgs_id': 'PGS000012', 'description': 'CAD GWAS'},
+            {'pgs_id': 'PGS000013', 'description': 'CAD multi-ancestry'}
+        ],
+        'category': 'Cardiometabolic',
+        'description': 'Risk of coronary artery disease based on genetic variants'
+    },
+
+    "Type 2 Diabetes": {
+        'simple_model': {
+            'rsid': ['rs7903146', 'rs13266634', 'rs7754840', 'rs10811661', 'rs4506565'],
+            'effect_allele': ['T', 'C', 'C', 'T', 'T'],
+            'effect_weight': [0.31, 0.14, 0.11, 0.22, 0.12]
+        },
+        'genomewide_models': [
+            {'pgs_id': 'PGS000014', 'description': 'T2D meta-analysis'},
+            {'pgs_id': 'PGS000015', 'description': 'T2D European ancestry'},
+            {'pgs_id': 'PGS000016', 'description': 'T2D multi-ethnic'}
+        ],
+        'category': 'Cardiometabolic',
+        'description': 'Risk of type 2 diabetes mellitus'
+    },
+
+    "Atrial Fibrillation": {
+        'simple_model': {
+            'rsid': ['rs2200733', 'rs10033464', 'rs6817105'],
+            'effect_allele': ['T', 'T', 'C'],
+            'effect_weight': [0.45, 0.30, 0.22]
+        },
+        'genomewide_models': [
+            {'pgs_id': 'PGS000017', 'description': 'AF GWAS meta-analysis'}
+        ],
+        'category': 'Cardiometabolic',
+        'description': 'Risk of atrial fibrillation'
+    },
+
+    "Hypertension": {
+        'genomewide_models': [
+            {'pgs_id': 'PGS000019', 'description': 'Hypertension GWAS'},
+            {'pgs_id': 'PGS000020', 'description': 'Blood pressure traits'}
+        ],
+        'category': 'Cardiometabolic',
+        'description': 'Risk of essential hypertension'
+    },
+
+    "Ischemic Stroke": {
+        'simple_model': {
+            'rsid': ['rs12425791', 'rs11833579', 'rs2200733'],
+            'effect_allele': ['A', 'A', 'T'],
+            'effect_weight': [0.18, 0.15, 0.28]
+        },
+        'genomewide_models': [
+            {'pgs_id': 'PGS000021', 'description': 'Ischemic stroke GWAS'}
+        ],
+        'category': 'Cardiometabolic',
+        'description': 'Risk of ischemic stroke'
+    },
+
+    # Cancer Risks
+    "Prostate Cancer": {
+        'simple_model': {
+            'rsid': ['rs1447295', 'rs6983267'],
+            'effect_allele': ['A', 'G'],
+            'effect_weight': [0.30, 0.25]
+        },
+        'genomewide_models': [
+            {'pgs_id': 'PGS000022', 'description': 'Prostate cancer GWAS'},
+            {'pgs_id': 'PGS000023', 'description': 'Prostate cancer risk score'}
+        ],
+        'category': 'Cancer',
+        'description': 'Risk of prostate cancer'
+    },
+
+    "Breast Cancer": {
+        'genomewide_models': [
+            {'pgs_id': 'PGS000024', 'description': 'Breast cancer GWAS'},
+            {'pgs_id': 'PGS000025', 'description': 'Breast cancer polygenic risk'}
+        ],
+        'category': 'Cancer',
+        'description': 'Risk of breast cancer'
+    },
+
+    "Colorectal Cancer": {
+        'simple_model': {
+            'rsid': ['rs6983267', 'rs4939827', 'rs10795668'],
+            'effect_allele': ['G', 'C', 'G'],
+            'effect_weight': [0.15, 0.14, 0.09]
+        },
+        'genomewide_models': [
+            {'pgs_id': 'PGS000026', 'description': 'Colorectal cancer GWAS'}
+        ],
+        'category': 'Cancer',
+        'description': 'Risk of colorectal cancer'
+    },
+
+    "Melanoma": {
+        'genomewide_models': [
+            {'pgs_id': 'PGS000027', 'description': 'Melanoma GWAS'}
+        ],
+        'category': 'Cancer',
+        'description': 'Risk of cutaneous melanoma'
+    },
+
+    # Autoimmune and Inflammatory Conditions
+    "Inflammatory Bowel Disease": {
+        'simple_model': {
+            'rsid': ['rs2066844', 'rs2476601', 'rs2187668'],
+            'effect_allele': ['G', 'A', 'T'],
+            'effect_weight': [0.25, 0.20, 0.15]
+        },
+        'genomewide_models': [
+            {'pgs_id': 'PGS000028', 'description': 'IBD GWAS meta-analysis'},
+            {'pgs_id': 'PGS000029', 'description': 'Crohn\'s disease specific'},
+            {'pgs_id': 'PGS000030', 'description': 'Ulcerative colitis specific'}
+        ],
+        'category': 'Autoimmune',
+        'description': 'Risk of inflammatory bowel disease (Crohn\'s/UC)'
+    },
+
+    "Rheumatoid Arthritis": {
+        'simple_model': {
+            'rsid': ['rs2476601', 'rs3087243'],
+            'effect_allele': ['A', 'G'],
+            'effect_weight': [0.30, 0.15]
+        },
+        'genomewide_models': [
+            {'pgs_id': 'PGS000031', 'description': 'RA GWAS meta-analysis'}
+        ],
+        'category': 'Autoimmune',
+        'description': 'Risk of rheumatoid arthritis'
+    },
+
+    "Systemic Lupus Erythematosus": {
+        'simple_model': {
+            'rsid': ['rs2476601', 'rs7574865'],
+            'effect_allele': ['A', 'T'],
+            'effect_weight': [0.28, 0.18]
+        },
+        'genomewide_models': [
+            {'pgs_id': 'PGS000032', 'description': 'SLE GWAS'}
+        ],
+        'category': 'Autoimmune',
+        'description': 'Risk of systemic lupus erythematosus'
+    },
+
+    "Multiple Sclerosis": {
+        'simple_model': {
+            'rsid': ['rs9271366', 'rs340874'],
+            'effect_allele': ['C', 'C'],
+            'effect_weight': [0.22, 0.19]
+        },
+        'genomewide_models': [
+            {'pgs_id': 'PGS000033', 'description': 'MS GWAS meta-analysis'}
+        ],
+        'category': 'Autoimmune',
+        'description': 'Risk of multiple sclerosis'
+    },
+
+    "Celiac Disease": {
+        'simple_model': {
+            'rsid': ['rs2187668', 'rs3184504'],
+            'effect_allele': ['T', 'A'],
+            'effect_weight': [0.20, 0.17]
+        },
+        'genomewide_models': [
+            {'pgs_id': 'PGS000034', 'description': 'Celiac disease GWAS'}
+        ],
+        'category': 'Autoimmune',
+        'description': 'Risk of celiac disease'
+    },
+
+    # Mental Health Conditions
+    "Major Depressive Disorder": {
+        'simple_model': {
+            'rsid': ['rs10503253', 'rs35936514'],
+            'effect_allele': ['A', 'C'],
+            'effect_weight': [0.15, 0.12]
+        },
+        'genomewide_models': [
+            {'pgs_id': 'PGS000035', 'description': 'MDD GWAS meta-analysis'}
+        ],
+        'category': 'Mental Health',
+        'description': 'Risk of major depressive disorder'
+    },
+
+    "Bipolar Disorder": {
+        'genomewide_models': [
+            {'pgs_id': 'PGS000036', 'description': 'Bipolar disorder GWAS'}
+        ],
+        'category': 'Mental Health',
+        'description': 'Risk of bipolar disorder'
+    },
+
+    "Schizophrenia": {
+        'simple_model': {
+            'rsid': ['rs1625579', 'rs7004633'],
+            'effect_allele': ['T', 'C'],
+            'effect_weight': [0.18, 0.14]
+        },
+        'genomewide_models': [
+            {'pgs_id': 'PGS000037', 'description': 'Schizophrenia GWAS meta-analysis'}
+        ],
+        'category': 'Mental Health',
+        'description': 'Risk of schizophrenia'
+    },
+
+    "ADHD": {
+        'genomewide_models': [
+            {'pgs_id': 'PGS000038', 'description': 'ADHD GWAS'}
+        ],
+        'category': 'Mental Health',
+        'description': 'Risk of attention deficit hyperactivity disorder'
+    },
+
+    # Skeletal and Other Conditions
+    "Osteoporosis": {
+        'simple_model': {
+            'rsid': ['rs3736228', 'rs2941740'],
+            'effect_allele': ['T', 'A'],
+            'effect_weight': [0.20, 0.15]
+        },
+        'genomewide_models': [
+            {'pgs_id': 'PGS000039', 'description': 'Bone mineral density GWAS'},
+            {'pgs_id': 'PGS000040', 'description': 'Osteoporotic fracture risk'}
+        ],
+        'category': 'Skeletal',
+        'description': 'Risk of osteoporosis and bone mineral density reduction'
+    },
+
+    "Asthma": {
+        'simple_model': {
+            'rsid': ['rs2305480', 'rs4950928'],
+            'effect_allele': ['G', 'C'],
+            'effect_weight': [0.18, 0.22]
+        },
+        'genomewide_models': [
+            {'pgs_id': 'PGS000041', 'description': 'Asthma GWAS meta-analysis'}
+        ],
+        'category': 'Skeletal',
+        'description': 'Risk of asthma'
+    }
+}
+
+# Helper functions for PRS model management
+def get_prs_model_categories():
+    """Get all available PRS model categories."""
+    categories = set()
+    for model in prs_models.values():
+        if 'category' in model:
+            categories.add(model['category'])
+    return sorted(list(categories))
+
+def get_prs_models_by_category(category):
+    """Get all PRS models for a specific category."""
+    return {name: model for name, model in prs_models.items()
+            if model.get('category') == category}
+
+def get_genomewide_models(trait_name):
+    """Get genome-wide models for a specific trait."""
+    if trait_name in prs_models and 'genomewide_models' in prs_models[trait_name]:
+        return prs_models[trait_name]['genomewide_models']
+    return []
+
+def get_simple_model(trait_name):
+    """Get simple model for a specific trait (for backward compatibility)."""
+    if trait_name in prs_models and 'simple_model' in prs_models[trait_name]:
+        return prs_models[trait_name]['simple_model']
+    return None
+
+def get_trait_description(trait_name):
+    """Get description for a specific trait."""
+    if trait_name in prs_models:
+        return prs_models[trait_name].get('description', '')
+    return ''
+
+# Legacy support - maintain backward compatibility
+def get_legacy_prs_models():
+    """Get PRS models in the old simple format for backward compatibility."""
+    legacy_models = {}
+    for trait_name, model_data in prs_models.items():
+        if 'simple_model' in model_data:
+            legacy_models[trait_name] = model_data['simple_model']
+    return legacy_models
 
 guidance_data = {
     "Coronary Artery Disease": {
