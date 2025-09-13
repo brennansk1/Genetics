@@ -395,7 +395,7 @@ def add_comprehensive_carrier_status(story, dna_data):
             data = [['rsID', 'Gene', 'Condition', 'Genotype', 'Status']]
             data.extend([[r['rsID'], r['Gene'], r['Condition'], r['Genotype'], r['Status']] for r in significant_results])
 
-            table = Table(data)
+            table = Table(data, colWidths=[0.8*inch, 1.2*inch, 2*inch, 0.8*inch, 1.2*inch])
             table.setStyle(TableStyle([
                 ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
                 ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
@@ -403,7 +403,8 @@ def add_comprehensive_carrier_status(story, dna_data):
                 ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
                 ('GRID', (0, 0), (-1, -1), 1, colors.black),
                 ('BACKGROUND', (0, 1), (-1, -1), colors.white),
-                ('TEXTCOLOR', (0, 1), (-1, -1), colors.black)
+                ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
+                ('FONTSIZE', (0, 0), (-1, -1), 8)
             ]))
             story.append(table)
         else:
@@ -505,12 +506,26 @@ def add_disease_risk_assessment(story, dna_data):
             if 'High' in risk_level or 'Hereditary' in risk_level:
                 high_risk_count += 1
 
+        # Determine condition and risk level
+        if 'condition' in info:
+            condition = info['condition']
+            risk_level_display = info.get('risk', 'Variant detected')
+        else:
+            risk_str = info.get('risk', 'Unknown')
+            if '(' in risk_str and ')' in risk_str:
+                condition, _ = risk_str.split('(', 1)
+                condition = condition.strip()
+                risk_level_display = "Pathogenic"
+            else:
+                condition = risk_str
+                risk_level_display = 'Variant detected'
+
         results.append({
             'rsID': rsid,
             'Gene': info['gene'],
-            'Condition': info.get('condition', info.get('risk', 'Unknown')),
+            'Condition': condition,
             'Genotype': genotype,
-            'Risk': risk_level
+            'Risk': risk_level_display
         })
 
     # Summary statistics
@@ -529,7 +544,9 @@ def add_disease_risk_assessment(story, dna_data):
             data = [['rsID', 'Gene', 'Condition', 'Genotype', 'Risk Level']]
             data.extend([[r['rsID'], r['Gene'], r['Condition'], r['Genotype'], r['Risk']] for r in detected_results])
 
-            table = Table(data)
+            # Aggressive column widths to fit more data
+            col_widths = [0.5*inch, 0.7*inch, 1.8*inch, 0.6*inch, 1.0*inch]
+            table = Table(data, colWidths=col_widths)
             table.setStyle(TableStyle([
                 ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
                 ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
@@ -537,7 +554,9 @@ def add_disease_risk_assessment(story, dna_data):
                 ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
                 ('GRID', (0, 0), (-1, -1), 1, colors.black),
                 ('BACKGROUND', (0, 1), (-1, -1), colors.white),
-                ('TEXTCOLOR', (0, 1), (-1, -1), colors.black)
+                ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
+                ('FONTSIZE', (0, 0), (-1, -1), 6),  # Reduced font size to 6 for better fit
+                ('WORDWRAP', (0, 0), (-1, -1), 'CJK')
             ]))
             story.append(table)
         else:

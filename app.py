@@ -2,7 +2,6 @@ import sys
 sys.path.append('src')
 
 import streamlit as st
-import streamlit as st
 import pandas as pd
 import os
 import tempfile
@@ -14,6 +13,7 @@ from src.render_wellness import render_wellness_profile
 from src.render_advanced import render_advanced_analytics
 from src.render_data_portability import render_data_portability
 from src.pdf_generator import generate_enhanced_pdf_report
+st.set_page_config(layout="wide")
 
 def render_pdf_generator(dna_data):
     """Render the enhanced PDF report generator interface."""
@@ -94,7 +94,6 @@ def render_pdf_generator(dna_data):
     """)
 
 def main():
-    st.set_page_config(layout="wide")
     st.title("Comprehensive Genomic Health Dashboard")
 
     st.warning("""

@@ -498,18 +498,18 @@ def render_advanced_analytics(dna_data):
                                     st.info(f"Your {allele} allele frequency: {global_freq:.3f} globally")
                         else:
                             st.warning(f"Your genotype data does not contain {impact_snp}.")
-                    else:
-                        st.warning(f"No information found for SNP {impact_snp}.")
-            else:
-                st.warning("Please enter an rsID.")
-   
-# Educational content for functional impact analysis
-st.subheader("What Does This Mean?")
-st.write("**How Variants Affect Function**: Genetic variants can change how proteins work, like altering a machine's performance. Some changes are neutral, others can enhance or reduce function.")
-st.write("Understanding functional impact helps explain why certain variants are associated with health outcomes.")
+                else:
+                    st.warning(f"No information found for SNP {impact_snp}.")
+        else:
+            st.warning("Please enter an rsID.")
 
-st.subheader("Key Takeaways")
-st.info("""
+    # Educational content for functional impact analysis
+    st.subheader("What Does This Mean?")
+    st.write("**How Variants Affect Function**: Genetic variants can change how proteins work, like altering a machine's performance. Some changes are neutral, others can enhance or reduce function.")
+    st.write("Understanding functional impact helps explain why certain variants are associated with health outcomes.")
+
+    st.subheader("Key Takeaways")
+    st.info("""
 - **Functional Impact**: Variants can modify protein function, enzyme activity, or gene expression
 - **Population Context**: Compare your variants to global frequencies for context
 - **Conservation**: Highly conserved regions are often functionally important
