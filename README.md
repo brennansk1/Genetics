@@ -81,6 +81,51 @@ docker build -t genomic-dashboard .
 docker run -p 8501:8501 genomic-dashboard
 ```
 
+### Data Files Setup
+
+This application requires the ClinVar database files for clinical variant analysis. These are large files (~1GB compressed) that need to be downloaded locally.
+
+#### Download ClinVar Database Files
+
+1. **Download the compressed VCF file**:
+   ```bash
+   cd data/
+   wget ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/clinvar.vcf.gz
+   ```
+
+2. **Download the tabix index file** (required for efficient querying):
+   ```bash
+   wget ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/clinvar.vcf.gz.tbi
+   ```
+
+3. **Optional: Extract the uncompressed VCF file** (if needed for certain analyses):
+   ```bash
+   gunzip -c clinvar.vcf.gz > clinvar.vcf
+   ```
+
+#### Alternative Download Methods
+
+- **Using curl**:
+  ```bash
+  curl -O ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/clinvar.vcf.gz
+  curl -O ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/clinvar.vcf.gz.tbi
+  ```
+
+- **Manual Download**: Visit [NCBI ClinVar FTP](ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/) and download `clinvar.vcf.gz` and `clinvar.vcf.gz.tbi`
+
+#### File Locations
+
+Ensure the files are placed in the `data/` directory:
+- `data/clinvar.vcf.gz` (compressed VCF file)
+- `data/clinvar.vcf.gz.tbi` (tabix index)
+- `data/clinvar.vcf` (uncompressed VCF, optional)
+
+#### Notes
+
+- The download may take several minutes depending on your internet connection
+- These files are updated regularly by NCBI; check for newer versions periodically
+- The application will use local files when available, falling back to API queries if files are missing
+
 ## 📊 Usage Guide
 
 1. **Launch Application**: `streamlit run src/app.py`

@@ -23,6 +23,8 @@ tmp/
 *livingdna*.txt
 *familytreedna*.txt
 *nebula*.txt
+data/clinvar.vcf.gz
+data/clinvar.vcf
 
 # Cache and Temporary Files
 cache/
