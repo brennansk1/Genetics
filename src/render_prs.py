@@ -2,15 +2,24 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
-from snp_data import prs_models, guidance_data, get_prs_model_categories, get_prs_models_by_category, get_genomewide_models, get_simple_model, get_trait_description
-from api_functions import get_pgs_catalog_data, get_pgs_model_data, search_pgs_models
-from genomewide_prs import GenomeWidePRS
-from lifetime_risk import LifetimeRiskCalculator, get_available_conditions
+from .snp_data import prs_models, guidance_data, get_prs_model_categories, get_prs_models_by_category, get_genomewide_models, get_simple_model, get_trait_description
+from .api_functions import get_pgs_catalog_data, get_pgs_model_data, search_pgs_models
+from .genomewide_prs import GenomeWidePRS
+from .lifetime_risk import LifetimeRiskCalculator, get_available_conditions
 import time
 
 def render_prs_dashboard(dna_data):
     st.header("🧬 Genome-wide Polygenic Risk Score (PRS) Dashboard")
     st.write("This module assesses risk for complex, multi-gene conditions using both simplified and genome-wide models.")
+
+    # Educational tooltips for technical terms
+    st.subheader("Understanding Key Terms")
+    with st.expander("Click to see beginner-friendly definitions of genetic terms"):
+        st.write("**Polygenic Risk Score (PRS)**: A calculation that combines many genetic variants to estimate disease risk, like adding up many small risk factors.")
+        st.write("**Percentile**: Your position on a risk scale (e.g., 75th percentile means higher risk than 75% of people).")
+        st.write("**Genome-wide**: Analysis using genetic variants across your entire genome, not just specific genes.")
+        st.write("**Haplotype**: A set of DNA variations that tend to be inherited together on the same chromosome.")
+        st.write("**Linkage Disequilibrium**: When certain genetic variants are found together more often than expected by chance.")
 
     # Initialize PRS calculator
     prs_calculator = GenomeWidePRS()
@@ -310,6 +319,20 @@ def display_genomewide_results(result, trait, dna_data):
         else:
             st.success("✅ High SNP coverage. Results are highly reliable.")
 
+    # Educational content for genome-wide PRS
+    st.subheader("What Does This Mean?")
+    st.write("**Many Genes, One Risk Score**: Unlike single-gene conditions, complex diseases like diabetes or heart disease are influenced by hundreds or thousands of genetic variants. Your PRS combines all these small effects into one score, like adding up many tiny ingredients to make a complete recipe.")
+    st.write("Genome-wide PRS uses advanced statistical models trained on large populations to predict disease risk based on your genetic makeup.")
+
+    st.subheader("Key Takeaways")
+    st.info(f"""
+    - **Your PRS Percentile**: {result['percentile']:.1f}th percentile means your genetic risk for {trait} is {'higher' if result['percentile'] > 50 else 'lower'} than {result['percentile']:.1f}% of the population
+    - **Not Deterministic**: PRS estimates probability, not certainty - lifestyle factors are also crucial
+    - **Genome-wide Coverage**: Uses thousands of genetic variants across your entire genome
+    - **Population Context**: Risk is relative to the reference population used in the model
+    - **Clinical Utility**: Can guide screening and prevention strategies, but not diagnostic
+    """)
+
     # Lifetime Risk Projections Section
     st.markdown("---")
     st.subheader("⏳ Lifetime Risk Projections")
@@ -396,6 +419,20 @@ def display_simple_results(result, trait, dna_data):
 
     # Note about model type
     st.info("ℹ️ This is a simplified model using only a few key SNPs. For more comprehensive analysis, consider using genome-wide models when available.")
+
+    # Educational content for simple PRS
+    st.subheader("What Does This Mean?")
+    st.write("**Simplified Risk Assessment**: This model uses just a few key genetic variants to estimate your risk, like checking the main ingredients in a recipe rather than every spice. While less comprehensive than genome-wide models, it still provides valuable insights.")
+    st.write("Simple PRS focuses on well-studied variants with strong effects on disease risk.")
+
+    st.subheader("Key Takeaways")
+    st.info(f"""
+    - **Your PRS Percentile**: {result['percentile']:.1f}th percentile indicates {'elevated' if result['percentile'] > 75 else 'average' if result['percentile'] > 25 else 'lower'} genetic risk for {trait}
+    - **Limited Scope**: Uses only {result['snps_used']} key variants, not genome-wide analysis
+    - **Strong Effects**: Focuses on variants with well-established associations
+    - **Starting Point**: Good foundation for understanding genetic risk factors
+    - **Complement Lifestyle**: Combine with environmental and lifestyle factors for full risk picture
+    """)
 
     # Lifetime Risk Projections Section
     st.markdown("---")

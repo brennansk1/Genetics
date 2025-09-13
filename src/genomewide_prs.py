@@ -16,8 +16,8 @@ import os
 from functools import lru_cache
 import time
 from datetime import datetime, timedelta
-from ancestry_inference import AncestryInference, infer_ancestry_from_snps
-from api_functions import make_api_request, get_api_health_status
+from .ancestry_inference import AncestryInference, infer_ancestry_from_snps
+from .api_functions import make_api_request, get_api_health_status
 
 class GenomeWidePRS:
     """

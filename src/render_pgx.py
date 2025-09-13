@@ -1,12 +1,21 @@
 import streamlit as st
 import pandas as pd
-from snp_data import pgx_snps, adverse_reaction_snps, star_allele_definitions, cpic_guidelines
-from pgx_star_alleles import star_caller, detect_cnv
-from api_functions import get_pharmgkb_data, get_api_health_status
+from .snp_data import pgx_snps, adverse_reaction_snps, star_allele_definitions, cpic_guidelines
+from .pgx_star_alleles import star_caller, detect_cnv
+from .api_functions import get_pharmgkb_data, get_api_health_status
 
 def render_pharmacogenomics(dna_data):
     st.header("Module 2: Pharmacogenomics (PGx) Report")
     st.write("This module provides comprehensive insights into potential responses to common medications using both basic SNP analysis and advanced star allele calling.")
+
+    # Educational tooltips for technical terms
+    st.subheader("Understanding Key Terms")
+    with st.expander("Click to see beginner-friendly definitions of genetic terms"):
+        st.write("**Star Allele**: A specific combination of genetic variants in a gene that affects how your body processes medications.")
+        st.write("**Metabolizer Status**: How quickly or slowly your body breaks down medications (like digestion speed for drugs).")
+        st.write("**Haplotype**: A set of DNA variations that tend to be inherited together on the same chromosome.")
+        st.write("**CNV (Copy Number Variation)**: Differences in the number of copies of a DNA segment between individuals.")
+        st.write("**Linkage Disequilibrium**: When certain genetic variants are found together more often than expected by chance.")
 
     # Star Allele Analysis Section
     st.subheader("2.1. Star Allele Genotyping & Metabolizer Status")
@@ -82,6 +91,20 @@ def render_pharmacogenomics(dna_data):
 
                         for drug, recommendation in recommendations.items():
                             st.write(f"**{drug.title()}:** {recommendation}")
+
+            # Educational content for star allele analysis
+            st.subheader("What Does This Mean?")
+            st.write("**Metabolizer Status as Digestion Speed**: Think of your metabolizer status like how fast your body 'digests' medications. Poor metabolizers are like slow digesters who need smaller doses, while ultra-rapid metabolizers are like fast digesters who might need higher doses to get the same effect.")
+            st.write("Star alleles are specific combinations of genetic variants that determine how efficiently your liver processes medications. This affects drug effectiveness and side effect risk.")
+
+            st.subheader("Key Takeaways")
+            st.info("""
+            - **Poor Metabolizer**: May need lower doses of certain medications to avoid side effects
+            - **Intermediate Metabolizer**: Standard doses usually work, but monitor for side effects
+            - **Normal Metabolizer**: Typical response to most medications
+            - **Rapid/Ultra-rapid**: May need higher doses for effectiveness, but watch for side effects
+            - **CPIC Guidelines**: Evidence-based dosing recommendations based on your genetic profile
+            """)
 
     # Basic SNP Analysis Section (backward compatibility)
     st.subheader("2.2. Basic SNP Analysis")
@@ -159,6 +182,20 @@ def render_pharmacogenomics(dna_data):
             if live_pharmgkb_data:
                 st.info(f"✅ Integrated data from {len([r for r in results if 'Live PharmGKB' in r['Data Sources']])} PharmGKB variants")
 
+            # Educational content for basic SNP analysis
+            st.subheader("What Does This Mean?")
+            st.write("**Individual Genetic Variants**: Each rsID represents a specific location in your DNA where variation can occur. These single changes can affect how your body responds to medications by altering enzyme function.")
+            st.write("This analysis looks at individual genetic markers that influence drug metabolism, similar to checking individual ingredients in a recipe.")
+
+            st.subheader("Key Takeaways")
+            st.info("""
+            - **Genotype Matters**: Your specific DNA sequence at each location determines drug response
+            - **Multiple Factors**: Drug response depends on many genetic and environmental factors
+            - **PharmGKB Integration**: Live data from PharmGKB provides up-to-date clinical annotations
+            - **Personalized Medicine**: Genetic testing helps optimize medication selection and dosing
+            - **Clinical Correlation**: Always combine genetic data with clinical symptoms and medical history
+            """)
+
     # Adverse Drug Reaction Section
     st.subheader("2.3. Adverse Drug Reaction Sensitivity")
     if st.button("Run Adverse Drug Reaction Sensitivity Analysis"):
@@ -175,6 +212,20 @@ def render_pharmacogenomics(dna_data):
             results.append({'rsID': rsid, 'Gene/Locus': info['gene'], 'Relevance': info['relevance'], 'Genotype': genotype, 'Interpretation': interpretation})
         adverse_df = pd.DataFrame(results).set_index('rsID')
         st.dataframe(adverse_df)
+
+        # Educational content for adverse drug reactions
+        st.subheader("What Does This Mean?")
+        st.write("**Genetic Risk for Side Effects**: Some genetic variants can increase your risk of experiencing adverse reactions to certain medications. This is like having a sensitivity to specific ingredients that can cause allergic reactions.")
+        st.write("Understanding these variants helps healthcare providers choose safer medication options and monitor for potential side effects.")
+
+        st.subheader("Key Takeaways")
+        st.info("""
+        - **Risk Awareness**: Genetic variants can increase susceptibility to drug side effects
+        - **Preventive Action**: Early identification allows for safer medication choices
+        - **Monitoring Important**: Close monitoring may be needed for at-risk individuals
+        - **Alternative Options**: Safer alternatives may be available for genetically sensitive individuals
+        - **Clinical Decision Support**: Genetic information guides personalized treatment plans
+        """)
 
     # Educational Information
     st.subheader("Understanding Your Results")

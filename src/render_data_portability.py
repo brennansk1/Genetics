@@ -1,10 +1,18 @@
 import streamlit as st
-from pdf_generator import generate_pdf_report
+from .pdf_generator import generate_pdf_report
 import os
 
 def render_data_portability(dna_data):
     st.header("Module 6: Data Portability and Utility")
     st.write("This module allows you to export your analysis results and interact with third-party tools.")
+
+    # Educational tooltips for technical terms
+    st.subheader("Understanding Key Terms")
+    with st.expander("Click to see beginner-friendly definitions of data terms"):
+        st.write("**Data Portability**: The ability to move your genetic data between different services and tools.")
+        st.write("**Export Formats**: Different file types (CSV, TSV, JSON) for sharing data with other applications.")
+        st.write("**Third-Party Tools**: External websites and services that can analyze your genetic data.")
+        st.write("**Data Privacy**: Protecting your genetic information from unauthorized access.")
 
     st.subheader("6.1. Export Analysis Results")
 
@@ -42,6 +50,20 @@ def render_data_portability(dna_data):
 
     st.write("**FamilyTreeDNA Integration:**")
     st.info("If you have FamilyTreeDNA data, you can upload it here for combined analysis.")
+
+    # Educational content for data portability
+    st.subheader("What Does This Mean?")
+    st.write("**Owning Your Data**: Data portability gives you control over your genetic information. You can move it between services, combine insights from different tools, and keep your data secure.")
+    st.write("Third-party tools offer specialized analysis that complements this dashboard's capabilities.")
+
+    st.subheader("Key Takeaways")
+    st.info("""
+    - **Data Control**: Export your data in multiple formats for use with other tools
+    - **Privacy First**: Your data stays local and private - only you decide where to share it
+    - **Tool Integration**: Combine insights from different genetic analysis platforms
+    - **Backup Security**: Regular exports ensure you never lose access to your data
+    - **Research Access**: Share anonymized data with research studies if you choose
+    """)
 
     st.subheader("6.4. Data Privacy and Security")
 

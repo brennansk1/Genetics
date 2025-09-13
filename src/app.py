@@ -4,17 +4,14 @@ import os
 import tempfile
 import sys
 
-# Add parent directory to path for imports
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from utils import parse_dna_file
-from render_clinical import render_clinical_risk
-from render_pgx import render_pharmacogenomics
-from render_prs import render_prs_dashboard
-from render_wellness import render_wellness_profile
-from render_advanced import render_advanced_analytics
-from render_data_portability import render_data_portability
-from src.pdf_generator.main import generate_enhanced_pdf_report
+from .utils import parse_dna_file
+from .render_clinical import render_clinical_risk
+from .render_pgx import render_pharmacogenomics
+from .render_prs import render_prs_dashboard
+from .render_wellness import render_wellness_profile
+from .render_advanced import render_advanced_analytics
+from .render_data_portability import render_data_portability
+from .pdf_generator.main import generate_enhanced_pdf_report
 
 def render_pdf_generator(dna_data):
     """Render the enhanced PDF report generator interface."""

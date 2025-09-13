@@ -41,6 +41,7 @@ def test_prs_calculator():
     """Test PRS calculator functionality"""
     print("\nTesting PRS calculator...")
 
+    # Synthetic data for testing purposes - not from real genetic data
     # Create sample DNA data
     sample_data = pd.DataFrame({
         'rsid': ['rs7903146', 'rs13266634', 'rs7754840'],

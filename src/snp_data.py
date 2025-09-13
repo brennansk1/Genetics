@@ -1,10 +1,12 @@
 # SNP data for various analyses
 
+# Recessive SNP data sourced from ClinVar and dbSNP databases
 recessive_snps = {
     'rs113993960': {'gene': 'CFTR', 'condition': 'Cystic Fibrosis', 'risk_allele': 'T', 'interp': {'CT': 'Carrier', 'TT': 'Affected'}},
     'rs334': {'gene': 'HBB', 'condition': 'Sickle Cell Anemia', 'risk_allele': 'A', 'interp': {'GA': 'Carrier', 'AA': 'Affected'}}
 }
 
+# Cancer SNP data sourced from ClinVar, COSMIC, and GWAS Catalog
 cancer_snps = {
     'rs80357906': {'gene': 'BRCA1', 'risk': 'Hereditary Cancer Risk (185delAG)'},
     'rs80357713': {'gene': 'BRCA1', 'risk': 'Hereditary Cancer Risk (5382insC)'},
@@ -21,6 +23,7 @@ cancer_snps = {
     'rs28934872': {'gene': 'TSC2', 'risk': 'Tuberous Sclerosis Complex'},
 }
 
+# Cardiovascular SNP data sourced from GWAS Catalog and ClinVar
 cardiovascular_snps = {
     'rs121913579': {'gene': 'MYH7', 'risk': 'Hypertrophic Cardiomyopathy (p.Arg403Gln)'},
     'rs121907891': {'gene': 'MYBPC3', 'risk': 'Hypertrophic Cardiomyopathy (p.Arg502Trp)'},
@@ -39,6 +42,7 @@ cardiovascular_snps = {
     'rs11591147': {'gene': 'PCSK9', 'risk': 'Familial Hypercholesterolemia (p.Asp374Tyr)'}
 }
 
+# Neurodegenerative SNP data sourced from GWAS Catalog and ClinVar
 neuro_snps = {
     'rs34637584': {'gene': 'LRRK2', 'risk': 'Parkinson\'s Disease (p.Gly2019Ser)'},
     'rs76763715': {'gene': 'GBA', 'risk': 'Parkinson\'s Disease (p.Asn370Ser)'},
@@ -46,6 +50,7 @@ neuro_snps = {
     'rs28929474': {'gene': 'SERPINA1', 'risk': 'Alpha-1 Antitrypsin Deficiency (p.Glu342Lys)'}
 }
 
+# Mitochondrial SNP data sourced from MITOMAP and ClinVar
 mito_snps = {
     'rs199476118': {'gene': 'MT-ND1', 'risk': 'Leber\'s Hereditary Optic Neuropathy (m.3460G>A)'},
     'rs199476112': {'gene': 'MT-ND4', 'risk': 'Leber\'s Hereditary Optic Neuropathy (m.11778G>A)'},
@@ -53,11 +58,13 @@ mito_snps = {
     'rs199474657': {'gene': 'MT-TL1', 'risk': 'Mitochondrial Encephalomyopathy (MELAS, m.3243A>G)'}
 }
 
+# Protective SNP data sourced from GWAS Catalog and literature reviews
 protective_snps = {
     'rs671': {'gene': 'ALDH2', 'trait': 'Alcohol Flush Protection', 'protective_allele': 'A', 'interp': {'GA': 'Reduced Alcohol Tolerance', 'AA': 'Strongly Reduced Alcohol Tolerance'}},
     'rs1229984': {'gene': 'ADH1B', 'trait': 'Alcoholism Protection', 'protective_allele': 'A', 'interp': {'GA': 'Reduced Alcoholism Risk', 'AA': 'Strongly Reduced Alcoholism Risk'}}
 }
 
+# Ancestry panel SNP data sourced from 1000 Genomes Project and literature
 ancestry_panels = {
     "Ashkenazi Jewish": {
         'rs387906309': {'gene': 'HEXA', 'condition': 'Tay-Sachs Disease'},
@@ -88,6 +95,7 @@ ancestry_panels = {
     }
 }
 
+# ACMG secondary findings variants sourced from ACMG guidelines and ClinVar
 acmg_sf_variants = {
     'rs80357713': {'gene': 'BRCA1', 'condition': 'Hereditary Breast and Ovarian Cancer'},
     'rs80359551': {'gene': 'BRCA2', 'condition': 'Hereditary Breast and Ovarian Cancer'},
@@ -145,6 +153,7 @@ acmg_sf_variants = {
     'rs879255283': {'gene': 'MEN1', 'condition': 'Multiple Endocrine Neoplasia Type 1'},
 }
 
+# Pharmacogenomics SNP data sourced from PharmGKB and CPIC guidelines
 pgx_snps = {
     'rs4244285': {'gene': 'CYP2C19', 'relevance': 'Clopidogrel Metabolism', 'interp': {'GG': 'Normal Metabolizer', 'AG': 'Intermediate', 'AA': 'Poor'}},
     'rs1057910': {'gene': 'CYP2C9*2', 'relevance': 'Warfarin/NSAID Metabolism', 'interp': {'CC': 'Normal', 'CT': 'Intermediate', 'TT': 'Poor'}},
@@ -160,7 +169,7 @@ pgx_snps = {
     'rs4149056': {'gene': 'SLCO1B1', 'relevance': 'Statins (e.g., Simvastatin)', 'interp': {'TT': 'Normal', 'CT': 'Intermediate', 'CC': 'Poor'}}
 }
 
-# Star allele definitions for comprehensive PGx analysis
+# Star allele definitions sourced from PharmGKB and CPIC guidelines
 star_allele_definitions = {
     'CYP2C19': {
         '*1': {'haplotypes': [], 'function': 'Normal', 'description': 'Reference haplotype'},
@@ -204,7 +213,7 @@ star_allele_definitions = {
     }
 }
 
-# CPIC dosing guidelines
+# CPIC dosing guidelines sourced from Clinical Pharmacogenetics Implementation Consortium
 cpic_guidelines = {
     'CYP2C19': {
         'clopidogrel': {
@@ -267,6 +276,7 @@ cpic_guidelines = {
     }
 }
 
+# Adverse reaction SNP data sourced from HLA nomenclature and literature
 adverse_reaction_snps = {
     'rs4149056': {'gene': 'SLCO1B1', 'relevance': 'Simvastatin Myopathy Risk', 'interp': {'TT': 'Normal risk', 'CT': 'Increased risk', 'CC': 'High risk'}},
     'rs3918290': {'gene': 'HLA-B*15:02', 'relevance': 'Carbamazepine SJS Risk', 'interp': {'GG': 'Normal', 'GT': 'Significantly Increased Risk', 'TT': 'Significantly Increased Risk'}},
@@ -274,7 +284,7 @@ adverse_reaction_snps = {
     'rs1061235': {'gene': 'HLA-A*31:01', 'relevance': 'Carbamazepine SJS Risk', 'interp': {'GG': 'Normal', 'GA': 'Carrier', 'AA': 'At risk'}}
 }
 
-# Legacy PRS models for backward compatibility
+# Legacy PRS models sourced from GWAS Catalog and literature (for backward compatibility)
 legacy_prs_models = {
     "Coronary Artery Disease": {'rsid': ['rs10757274', 'rs10757278', 'rs1333049', 'rs2383206'], 'effect_allele': ['G', 'G', 'C', 'A'], 'effect_weight': [0.177, 0.198, 0.126, 0.106]},
     "Type 2 Diabetes": {'rsid': ['rs7903146', 'rs13266634', 'rs7754840', 'rs10811661', 'rs4506565'], 'effect_allele': ['T', 'C', 'C', 'T', 'T'], 'effect_weight': [0.31, 0.14, 0.11, 0.22, 0.12]},
@@ -293,7 +303,7 @@ legacy_prs_models = {
     "Asthma": {'rsid': ['rs2305480', 'rs4950928'], 'effect_allele': ['G', 'C'], 'effect_weight': [0.18, 0.22]}
 }
 
-# Genome-wide PRS Models with PGS Catalog Integration
+# Genome-wide PRS Models sourced from PGS Catalog and GWAS studies
 prs_models = {
     # Cardiometabolic Diseases
     "Coronary Artery Disease": {
@@ -587,6 +597,7 @@ def get_legacy_prs_models():
             legacy_models[trait_name] = model_data['simple_model']
     return legacy_models
 
+# Guidance data compiled from clinical guidelines and literature reviews
 guidance_data = {
     "Coronary Artery Disease": {
         "lifestyle": ["Maintain healthy weight (BMI 18.5-24.9)", "Regular aerobic exercise (150 min/week)", "Mediterranean diet", "No smoking", "Limit alcohol to 1 drink/day"],

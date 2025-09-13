@@ -11,7 +11,7 @@ from reportlab.lib import colors
 import os
 import io
 import requests # Added for PharmGKB integration
-from vcf_converter import convert_vcf_gz_to_tsv
+from .vcf_converter import convert_vcf_gz_to_tsv
 
 
 # --- ClinVar Pathogenic Variant Screener ---

@@ -17,6 +17,7 @@ def test_ancestry_inference():
     """Test ancestry inference functionality"""
     print("Testing ancestry inference...")
 
+    # Synthetic data for testing purposes - not from real genetic data
     # Create sample DNA data with some AIMs
     sample_data = pd.DataFrame({
         'rsid': ['rs1426654', 'rs16891982', 'rs2814778', 'rs3827760'],
@@ -41,6 +42,7 @@ def test_ancestry_adjusted_prs():
     """Test ancestry-adjusted PRS calculation"""
     print("\nTesting ancestry-adjusted PRS...")
 
+    # Synthetic data for testing purposes - not from real genetic data
     # Create sample DNA data
     sample_data = pd.DataFrame({
         'rsid': ['rs7903146', 'rs13266634', 'rs7754840', 'rs1426654', 'rs16891982'],

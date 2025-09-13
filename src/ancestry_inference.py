@@ -9,11 +9,11 @@ import pandas as pd
 import numpy as np
 from typing import Dict, List, Optional, Tuple, Union
 import os
-from local_data_utils import LocalGeneticData
+from .local_data_utils import LocalGeneticData
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 import warnings
-from api_functions import get_gnomad_population_data, get_api_health_status
+from .api_functions import get_gnomad_population_data, get_api_health_status
 
 class AncestryInference:
     """

@@ -6,12 +6,8 @@ import os
 from reportlab.platypus import SimpleDocTemplate
 from reportlab.lib.pagesizes import letter
 
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from utils import analyze_wellness_snps
-from snp_data import pgx_snps, prs_models, guidance_data
+from ..utils import analyze_wellness_snps
+from ..snp_data import pgx_snps, prs_models, guidance_data
 try:
     from .sections import (
         add_cover_page,

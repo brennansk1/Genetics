@@ -1,12 +1,21 @@
 import streamlit as st
 import pandas as pd
-from snp_data import recessive_snps, cancer_snps, cardiovascular_snps, neuro_snps, mito_snps, protective_snps, ancestry_panels, acmg_sf_variants
-from api_functions import get_clinvar_data, get_api_health_status
-from local_data_utils import get_clinvar_pathogenic_variants_local
+from .snp_data import recessive_snps, cancer_snps, cardiovascular_snps, neuro_snps, mito_snps, protective_snps, ancestry_panels, acmg_sf_variants
+from .api_functions import get_clinvar_data, get_api_health_status
+from .local_data_utils import get_clinvar_pathogenic_variants_local
 
 def render_clinical_risk(dna_data):
     st.header("Module 1: Clinical Risk & Carrier Status")
     st.write("This module will identify high-impact genetic variants with established clinical significance.")
+
+    # Educational tooltips for technical terms
+    st.subheader("Understanding Key Terms")
+    with st.expander("Click to see beginner-friendly definitions of genetic terms"):
+        st.write("**rsID**: A unique identifier for a genetic variant, like a serial number for a specific change in your DNA.")
+        st.write("**Genotype**: Your specific combination of DNA letters at a particular location (e.g., AA, AG, GG).")
+        st.write("**Pathogenic**: A variant that causes or increases risk of disease.")
+        st.write("**Carrier**: Someone who has one copy of a disease-causing variant but doesn't have symptoms.")
+        st.write("**Recessive**: A condition that requires two copies of a variant (one from each parent) to cause disease.")
 
     st.subheader("1.1. Pathogenic Variant Screener")
 
@@ -106,6 +115,20 @@ def render_clinical_risk(dna_data):
                 st.error(f"Error during pathogenic variant screening: {str(e)}")
                 st.info("Try switching to local data source or contact support.")
 
+        # Educational content for pathogenic variants
+        st.subheader("What Does This Mean?")
+        st.write("**Disease-Causing Variants**: Pathogenic variants are like 'broken' instructions in your DNA that can cause serious health conditions. This screening checks against a comprehensive database of known disease-causing changes.")
+        st.write("Most people don't carry pathogenic variants, but when they do, it can have significant implications for health and family planning.")
+
+        st.subheader("Key Takeaways")
+        st.info("""
+        - **Pathogenic Variants**: Changes in DNA that cause or increase risk of disease
+        - **Clinical Significance**: These variants have established medical importance
+        - **Genetic Counseling**: If variants are found, consult a genetic counselor
+        - **Family Implications**: Pathogenic variants can be inherited by children
+        - **Not Comprehensive**: This covers known variants, but new discoveries continue
+        """)
+
     st.subheader("1.2. Recessive Carrier Status Report")
     if st.button("Run Recessive Carrier Status Report"):
         results = []
@@ -122,6 +145,20 @@ def render_clinical_risk(dna_data):
         carrier_df = pd.DataFrame(results).set_index('rsID')
         st.dataframe(carrier_df)
 
+        # Educational content for recessive carriers
+        st.subheader("What Does This Mean?")
+        st.write("**Carrier Status**: Being a carrier means you have one copy of a disease-causing variant but are healthy yourself. For recessive conditions, you need two copies (one from each parent) to develop the disease.")
+        st.write("If both partners are carriers for the same condition, their children have a 25% chance of inheriting the disease.")
+
+        st.subheader("Key Takeaways")
+        st.info("""
+        - **Carrier vs Affected**: Carriers are healthy but can pass variants to children
+        - **Recessive Inheritance**: Requires two copies of the variant to cause disease
+        - **Partner Testing**: Important to test partners for family planning
+        - **Genetic Counseling**: Recommended for carriers and their families
+        - **Not All Variants Covered**: This is a targeted screening, not comprehensive
+        """)
+
     st.subheader("1.3. Hereditary Cancer Syndromes")
     if st.button("Run Hereditary Cancer Syndromes Analysis"):
         results = []
@@ -136,6 +173,20 @@ def render_clinical_risk(dna_data):
             results.append({'rsID': rsid, 'Gene': info['gene'], 'Risk': info['risk'], 'Genotype': genotype, 'Status': status})
         cancer_df = pd.DataFrame(results).set_index('rsID')
         st.dataframe(cancer_df)
+
+        # Educational content for cancer syndromes
+        st.subheader("What Does This Mean?")
+        st.write("**Hereditary Cancer Risk**: Some genetic variants significantly increase cancer risk by affecting DNA repair or tumor suppression genes. Early detection and prevention strategies can be crucial.")
+        st.write("Positive results don't guarantee cancer development, but they inform screening and prevention plans.")
+
+        st.subheader("Key Takeaways")
+        st.info("""
+        - **Increased Surveillance**: May need earlier or more frequent cancer screenings
+        - **Prevention Options**: Lifestyle changes and preventive surgeries may be considered
+        - **Family Impact**: Relatives may also be at increased risk
+        - **Multidisciplinary Care**: Involves oncologists, genetic counselors, and other specialists
+        - **Not All Cancers Covered**: This focuses on hereditary forms with known genetic causes
+        """)
 
     st.subheader("1.4. Cardiovascular Conditions")
     if st.button("Run Cardiovascular Conditions Analysis"):
@@ -195,6 +246,20 @@ def render_clinical_risk(dna_data):
             results.append({'rsID': rsid, 'Gene': info['gene'], 'Trait': info['trait'], 'Genotype': genotype, 'Status': status})
         protective_df = pd.DataFrame(results).set_index('rsID')
         st.dataframe(protective_df)
+
+        # Educational content for protective variants
+        st.subheader("What Does This Mean?")
+        st.write("**Protective Variants**: Some genetic variants can actually protect against diseases or enhance health. These 'good' variants show how genetics can work in your favor.")
+        st.write("While protective variants are beneficial, they don't guarantee health - lifestyle still plays a major role.")
+
+        st.subheader("Key Takeaways")
+        st.info("""
+        - **Natural Protection**: Some variants provide built-in disease protection
+        - **Not Guarantees**: Protection doesn't eliminate all risk factors
+        - **Lifestyle Still Matters**: Diet, exercise, and environment remain important
+        - **Research Ongoing**: Scientists continue discovering protective variants
+        - **Individual Variation**: Protection levels vary between individuals
+        """)
 
     st.subheader("1.8. Expanded Ancestry-Aware Screening Panels")
     selected_ancestry = st.selectbox("Select your ancestry background for targeted screening", list(ancestry_panels.keys()))

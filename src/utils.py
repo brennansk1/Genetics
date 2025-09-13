@@ -94,6 +94,7 @@ def analyze_wellness_snps(dna_data):
     """
     Analyzes the user's DNA data for a predefined list of wellness-related SNPs.
     """
+    # SNP data sourced from GWAS Catalog, ClinVar, and literature reviews
     snps_to_analyze = {
         # Nutritional Genetics
         "rs4988235": {"name": "Lactose Tolerance", "gene": "MCM6", "interp": {"CC": "Lactase non-persistent", "CT": "Lactase non-persistent", "TT": "Lactase persistent"}},

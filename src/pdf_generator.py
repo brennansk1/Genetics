@@ -1,3 +1,4 @@
+# PDF Generator module - uses curated genetic data from ClinVar, dbSNP, PGS Catalog, and GWAS studies
 import pandas as pd
 import numpy as np
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image, PageBreak
@@ -11,8 +12,8 @@ from io import BytesIO
 import os
 from math import pi, cos, sin
 
-from utils import analyze_wellness_snps
-from snp_data import pgx_snps, prs_models, guidance_data
+from .utils import analyze_wellness_snps
+from .snp_data import pgx_snps, prs_models, guidance_data
 
 def get_evidence_stars(rsid, condition_type="general"):
     """

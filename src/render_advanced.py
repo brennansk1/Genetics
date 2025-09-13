@@ -2,19 +2,28 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import requests
-from local_data_utils import get_gene_info_local, get_snp_info_local, get_population_frequencies_local, local_data
-from bioinformatics_utils import (
+from .local_data_utils import get_gene_info_local, get_snp_info_local, get_population_frequencies_local, local_data
+from .bioinformatics_utils import (
     analyze_genotype_quality, predict_functional_impact, calculate_maf,
     analyze_ld_patterns, identify_compound_heterozygotes, calculate_genetic_distance,
     extract_sequence_context, analyze_snp_conservation
 )
-from snp_data import recessive_snps, cancer_snps, cardiovascular_snps, neuro_snps, mito_snps
-from api_functions import search_pubmed, get_pubmed_abstract, get_gnomad_population_data, get_api_health_status
+from .snp_data import recessive_snps, cancer_snps, cardiovascular_snps, neuro_snps, mito_snps
+from .api_functions import search_pubmed, get_pubmed_abstract, get_gnomad_population_data, get_api_health_status
 import numpy as np
 
 def render_advanced_analytics(dna_data):
     st.header("Module 5: Advanced Analytics & Exploration Tools")
     st.write("This module provides powerful tools for 'citizen scientists' to explore their data.")
+
+    # Educational tooltips for technical terms
+    st.subheader("Understanding Key Terms")
+    with st.expander("Click to see beginner-friendly definitions of genetic terms"):
+        st.write("**Chromosome**: Thread-like structures in cells that contain DNA, like chapters in a book.")
+        st.write("**Functional Impact**: How a genetic variant might affect protein function or health.")
+        st.write("**Conservation**: How similar a DNA sequence is across different species (highly conserved regions are often important).")
+        st.write("**Linkage Disequilibrium**: When genetic variants tend to be inherited together.")
+        st.write("**Haplotype**: A set of DNA variations that are usually inherited together as a block.")
 
     st.subheader("5.1. Interactive Chromosome Explorer")
 
@@ -487,9 +496,23 @@ def render_advanced_analytics(dna_data):
                                 if not allele_freq.empty:
                                     global_freq = allele_freq['frequency'].mean()
                                     st.info(f"Your {allele} allele frequency: {global_freq:.3f} globally")
+                        else:
+                            st.warning(f"Your genotype data does not contain {impact_snp}.")
                     else:
-                        st.warning(f"Your genotype data does not contain {impact_snp}.")
-                else:
-                    st.warning(f"No information found for SNP {impact_snp}.")
-        else:
-            st.warning("Please enter an rsID.")
+                        st.warning(f"No information found for SNP {impact_snp}.")
+            else:
+                st.warning("Please enter an rsID.")
+   
+# Educational content for functional impact analysis
+st.subheader("What Does This Mean?")
+st.write("**How Variants Affect Function**: Genetic variants can change how proteins work, like altering a machine's performance. Some changes are neutral, others can enhance or reduce function.")
+st.write("Understanding functional impact helps explain why certain variants are associated with health outcomes.")
+
+st.subheader("Key Takeaways")
+st.info("""
+- **Functional Impact**: Variants can modify protein function, enzyme activity, or gene expression
+- **Population Context**: Compare your variants to global frequencies for context
+- **Conservation**: Highly conserved regions are often functionally important
+- **Research Tool**: This analysis helps researchers understand variant effects
+- **Clinical Correlation**: Functional data supports medical interpretation
+""")

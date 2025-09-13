@@ -9,7 +9,7 @@ according to CPIC guidelines.
 import pandas as pd
 from typing import Dict, List, Tuple, Optional, Union
 from collections import defaultdict
-from snp_data import star_allele_definitions, cpic_guidelines
+from .snp_data import star_allele_definitions, cpic_guidelines
 
 # Star allele definitions with haplotype patterns
 STAR_ALLELE_DEFINITIONS = star_allele_definitions
