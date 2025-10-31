@@ -1,19 +1,24 @@
-import requests
-import xml.etree.ElementTree as ET
-import pandas as pd
-import streamlit as st
-from .utils import api_call_with_retry
-import time
-import json
-import os
-import logging
-from functools import lru_cache
-from datetime import datetime, timedelta
 import hashlib
+import json
+import logging
+import os
+import time
+import xml.etree.ElementTree as ET
+from datetime import datetime, timedelta
+from functools import lru_cache
+
+import pandas as pd
+import requests
+import streamlit as st
+
+from .utils import api_call_with_retry
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
+
 
 # Global rate limiter and cache manager
 class APIRateLimiter:
@@ -35,6 +40,7 @@ class APIRateLimiter:
         """Record that a call was made"""
         self.call_times.append(time.time())
 
+
 class APICache:
     """Simple file-based cache for API responses"""
 
@@ -55,13 +61,13 @@ class APICache:
 
         if os.path.exists(cache_file):
             try:
-                with open(cache_file, 'r') as f:
+                with open(cache_file, "r") as f:
                     cached_data = json.load(f)
 
                 # Check if cache is expired
-                cached_time = datetime.fromisoformat(cached_data['timestamp'])
+                cached_time = datetime.fromisoformat(cached_data["timestamp"])
                 if datetime.now() - cached_time < timedelta(hours=self.expiry_hours):
-                    return cached_data['data']
+                    return cached_data["data"]
                 else:
                     # Remove expired cache
                     os.remove(cache_file)
@@ -81,24 +87,26 @@ class APICache:
         cache_file = os.path.join(self.cache_dir, f"{cache_key}.json")
 
         cache_data = {
-            'timestamp': datetime.now().isoformat(),
-            'url': url,
-            'params': params,
-            'data': data
+            "timestamp": datetime.now().isoformat(),
+            "url": url,
+            "params": params,
+            "data": data,
         }
 
         try:
-            with open(cache_file, 'w') as f:
+            with open(cache_file, "w") as f:
                 json.dump(cache_data, f)
         except Exception:
             # Silently fail if caching fails
             pass
 
+
 # Global instances
 rate_limiter = APIRateLimiter()
 api_cache = APICache()
 
-def make_api_request(url, params=None, method='GET', timeout=30, use_cache=True):
+
+def make_api_request(url, params=None, method="GET", timeout=30, use_cache=True):
     """
     Enhanced API request with caching, rate limiting, and error handling
 
@@ -113,7 +121,7 @@ def make_api_request(url, params=None, method='GET', timeout=30, use_cache=True)
         Response data or None if failed
     """
     # Check cache first
-    if use_cache and method == 'GET':
+    if use_cache and method == "GET":
         cached_data = api_cache.get(url, params)
         if cached_data is not None:
             return cached_data
@@ -127,9 +135,9 @@ def make_api_request(url, params=None, method='GET', timeout=30, use_cache=True)
         rate_limiter.record_call()
         logger.info(f"Making {method} request to {url} with params: {params}")
 
-        if method == 'GET':
+        if method == "GET":
             response = requests.get(url, params=params, timeout=timeout)
-        elif method == 'POST':
+        elif method == "POST":
             response = requests.post(url, json=params, timeout=timeout)
         else:
             raise ValueError(f"Unsupported HTTP method: {method}")
@@ -146,7 +154,7 @@ def make_api_request(url, params=None, method='GET', timeout=30, use_cache=True)
             logger.info(f"Received text response from {url}: {data[:200]}...")
 
         # Cache successful responses
-        if use_cache and method == 'GET':
+        if use_cache and method == "GET":
             api_cache.set(url, params, data)
 
         return data
@@ -172,6 +180,7 @@ def make_api_request(url, params=None, method='GET', timeout=30, use_cache=True)
         st.error(f"Unexpected error for {url}: {e}")
         return None
 
+
 @api_call_with_retry()
 def get_clinvar_data(rsids, use_cache=True):
     """
@@ -192,12 +201,7 @@ def get_clinvar_data(rsids, use_cache=True):
     # Join the rsids into a single string
     id_list = ",".join(rsids)
 
-    params = {
-        "db": "clinvar",
-        "id": id_list,
-        "rettype": "vcv",
-        "retmode": "xml"
-    }
+    params = {"db": "clinvar", "id": id_list, "rettype": "vcv", "retmode": "xml"}
 
     # Use enhanced API request
     logger.info(f"Fetching ClinVar data for rsIDs: {rsids}")
@@ -214,11 +218,13 @@ def get_clinvar_data(rsids, use_cache=True):
 
         results = {}
 
-        for variation_archive in root.findall('.//VariationArchive'):
-            rsid = variation_archive.get('VariationName')
+        for variation_archive in root.findall(".//VariationArchive"):
+            rsid = variation_archive.get("VariationName")
             logger.debug(f"Processing ClinVar data for {rsid}")
 
-            clinical_assertion = variation_archive.find('.//ClinicalAssertion/ClinicalSignificance/Description')
+            clinical_assertion = variation_archive.find(
+                ".//ClinicalAssertion/ClinicalSignificance/Description"
+            )
             if clinical_assertion is not None:
                 results[rsid] = clinical_assertion.text
             else:
@@ -236,6 +242,7 @@ def get_clinvar_data(rsids, use_cache=True):
         logger.error(f"Unexpected error processing ClinVar data: {e}")
         st.error(f"Unexpected error processing ClinVar data: {e}")
         return None
+
 
 @api_call_with_retry()
 def get_pharmgkb_data(rsids, use_cache=True):
@@ -269,13 +276,19 @@ def get_pharmgkb_data(rsids, use_cache=True):
 
         try:
             logger.debug(f"Processing PharmGKB response for {rsid}: {data}")
-            if 'data' in data and data['data']:
+            if "data" in data and data["data"]:
                 annotations = []
-                for annotation in data['data']:
-                    drug = annotation.get('relatedChemicals', [{}])[0].get('name', 'N/A')
-                    phenotype = annotation.get('phenotype', {}).get('name', 'N/A')
-                    level_of_evidence = annotation.get('levelOfEvidence', {}).get('name', 'N/A')
-                    annotations.append(f"Drug: {drug}, Phenotype: {phenotype}, Evidence: {level_of_evidence}")
+                for annotation in data["data"]:
+                    drug = annotation.get("relatedChemicals", [{}])[0].get(
+                        "name", "N/A"
+                    )
+                    phenotype = annotation.get("phenotype", {}).get("name", "N/A")
+                    level_of_evidence = annotation.get("levelOfEvidence", {}).get(
+                        "name", "N/A"
+                    )
+                    annotations.append(
+                        f"Drug: {drug}, Phenotype: {phenotype}, Evidence: {level_of_evidence}"
+                    )
                 results[rsid] = "; ".join(annotations)
                 logger.info(f"Found {len(annotations)} annotations for {rsid}")
             else:
@@ -290,6 +303,7 @@ def get_pharmgkb_data(rsids, use_cache=True):
 
     return results
 
+
 @api_call_with_retry()
 def get_pgs_catalog_data(trait, max_results=50):
     """
@@ -303,10 +317,7 @@ def get_pgs_catalog_data(trait, max_results=50):
         List of PGS model summaries
     """
     base_url = "https://www.pgscatalog.org/rest/score/search"
-    params = {
-        "trait": trait,
-        "limit": max_results
-    }
+    params = {"trait": trait, "limit": max_results}
 
     try:
         response = requests.get(base_url, params=params, timeout=30)
@@ -317,10 +328,10 @@ def get_pgs_catalog_data(trait, max_results=50):
 
         # Add metadata to each result
         for result in results:
-            result['num_variants'] = result.get('variants_number', 0)
-            result['genome_build'] = result.get('genome_build', 'Unknown')
-            result['ancestry'] = result.get('ancestry', 'Unknown')
-            result['trait_reported'] = result.get('trait_reported', trait)
+            result["num_variants"] = result.get("variants_number", 0)
+            result["genome_build"] = result.get("genome_build", "Unknown")
+            result["ancestry"] = result.get("ancestry", "Unknown")
+            result["trait_reported"] = result.get("trait_reported", trait)
 
         return results
 
@@ -330,6 +341,7 @@ def get_pgs_catalog_data(trait, max_results=50):
     except Exception as e:
         st.error(f"Error processing PGS Catalog data: {str(e)}")
         return []
+
 
 @api_call_with_retry()
 def get_pgs_model_data(pgs_id, include_metadata=True):
@@ -351,20 +363,20 @@ def get_pgs_model_data(pgs_id, include_metadata=True):
         data = response.json()
 
         # Extract scoring file URL
-        if 'ftp_scoring_file' in data:
-            scoring_url = data['ftp_scoring_file']
+        if "ftp_scoring_file" in data:
+            scoring_url = data["ftp_scoring_file"]
 
             # Download and parse the scoring file
             scoring_response = requests.get(scoring_url, timeout=60)
             scoring_response.raise_for_status()
 
             # Parse TSV content
-            lines = scoring_response.text.strip().split('\n')
+            lines = scoring_response.text.strip().split("\n")
             if len(lines) < 2:
                 st.warning(f"Empty scoring file for PGS ID {pgs_id}")
                 return None
 
-            header = lines[0].split('\t')
+            header = lines[0].split("\t")
 
             rsids = []
             effect_alleles = []
@@ -375,10 +387,10 @@ def get_pgs_model_data(pgs_id, include_metadata=True):
 
             for line in lines[1:]:
                 if line.strip():
-                    parts = line.split('\t')
+                    parts = line.split("\t")
                     if len(parts) >= 5:  # rsID, chr, pos, effect_allele, effect_weight
                         rsids.append(parts[0])
-                        chromosomes.append(parts[1] if len(parts) > 1 else 'Unknown')
+                        chromosomes.append(parts[1] if len(parts) > 1 else "Unknown")
                         positions.append(int(parts[2]) if len(parts) > 2 else 0)
                         effect_alleles.append(parts[3])
                         effect_weights.append(float(parts[4]))
@@ -387,29 +399,33 @@ def get_pgs_model_data(pgs_id, include_metadata=True):
                         if len(parts) > 5:
                             other_alleles.append(parts[5])
                         else:
-                            other_alleles.append('Unknown')
+                            other_alleles.append("Unknown")
 
             model_data = {
-                'pgs_id': pgs_id,
-                'rsid': rsids,
-                'effect_allele': effect_alleles,
-                'effect_weight': effect_weights,
-                'chromosome': chromosomes,
-                'position': positions,
-                'other_allele': other_alleles,
-                'num_variants': len(rsids)
+                "pgs_id": pgs_id,
+                "rsid": rsids,
+                "effect_allele": effect_alleles,
+                "effect_weight": effect_weights,
+                "chromosome": chromosomes,
+                "position": positions,
+                "other_allele": other_alleles,
+                "num_variants": len(rsids),
             }
 
             if include_metadata:
-                model_data.update({
-                    'trait': data.get('trait_reported', 'Unknown'),
-                    'genome_build': data.get('genome_build', 'Unknown'),
-                    'ancestry': data.get('ancestry', 'Unknown'),
-                    'citation': data.get('citation', 'Unknown'),
-                    'method_name': data.get('method_name', 'Unknown'),
-                    'training_samples': data.get('samples_variants_numbers', {}).get('training', 0),
-                    'raw_metadata': data
-                })
+                model_data.update(
+                    {
+                        "trait": data.get("trait_reported", "Unknown"),
+                        "genome_build": data.get("genome_build", "Unknown"),
+                        "ancestry": data.get("ancestry", "Unknown"),
+                        "citation": data.get("citation", "Unknown"),
+                        "method_name": data.get("method_name", "Unknown"),
+                        "training_samples": data.get(
+                            "samples_variants_numbers", {}
+                        ).get("training", 0),
+                        "raw_metadata": data,
+                    }
+                )
 
             return model_data
         else:
@@ -422,6 +438,7 @@ def get_pgs_model_data(pgs_id, include_metadata=True):
     except Exception as e:
         st.error(f"Error processing PGS model {pgs_id}: {str(e)}")
         return None
+
 
 @api_call_with_retry()
 def search_pgs_models(query, trait_filter=None, max_results=20):
@@ -437,7 +454,7 @@ def search_pgs_models(query, trait_filter=None, max_results=20):
         List of matching PGS models
     """
     # If query looks like a PGS ID, fetch directly
-    if query.upper().startswith('PGS'):
+    if query.upper().startswith("PGS"):
         model_data = get_pgs_model_data(query)
         if model_data:
             return [model_data]
@@ -446,10 +463,7 @@ def search_pgs_models(query, trait_filter=None, max_results=20):
 
     # Otherwise, search by trait
     base_url = "https://www.pgscatalog.org/rest/score/search"
-    params = {
-        "q": query,
-        "limit": max_results
-    }
+    params = {"q": query, "limit": max_results}
 
     if trait_filter:
         params["trait"] = trait_filter
@@ -462,17 +476,19 @@ def search_pgs_models(query, trait_filter=None, max_results=20):
         results = []
         for result in data.get("results", []):
             # Get full model data for each result
-            pgs_id = result.get('id')
+            pgs_id = result.get("id")
             if pgs_id:
                 model_data = get_pgs_model_data(pgs_id, include_metadata=False)
                 if model_data:
                     # Add metadata from search result
-                    model_data.update({
-                        'trait': result.get('trait_reported', 'Unknown'),
-                        'genome_build': result.get('genome_build', 'Unknown'),
-                        'ancestry': result.get('ancestry', 'Unknown'),
-                        'citation': result.get('citation', 'Unknown')
-                    })
+                    model_data.update(
+                        {
+                            "trait": result.get("trait_reported", "Unknown"),
+                            "genome_build": result.get("genome_build", "Unknown"),
+                            "ancestry": result.get("ancestry", "Unknown"),
+                            "citation": result.get("citation", "Unknown"),
+                        }
+                    )
                     results.append(model_data)
 
         return results
@@ -480,6 +496,7 @@ def search_pgs_models(query, trait_filter=None, max_results=20):
     except Exception as e:
         st.error(f"Error searching PGS models: {str(e)}")
         return []
+
 
 def get_pgs_model_summary(pgs_id):
     """
@@ -499,21 +516,24 @@ def get_pgs_model_summary(pgs_id):
         data = response.json()
 
         return {
-            'pgs_id': pgs_id,
-            'trait': data.get('trait_reported', 'Unknown'),
-            'num_variants': data.get('variants_number', 0),
-            'genome_build': data.get('genome_build', 'Unknown'),
-            'ancestry': data.get('ancestry', 'Unknown'),
-            'method_name': data.get('method_name', 'Unknown'),
-            'citation': data.get('citation', 'Unknown'),
-            'has_scoring_file': 'ftp_scoring_file' in data,
-            'training_samples': data.get('samples_variants_numbers', {}).get('training', 0),
-            'raw_metadata': data
+            "pgs_id": pgs_id,
+            "trait": data.get("trait_reported", "Unknown"),
+            "num_variants": data.get("variants_number", 0),
+            "genome_build": data.get("genome_build", "Unknown"),
+            "ancestry": data.get("ancestry", "Unknown"),
+            "method_name": data.get("method_name", "Unknown"),
+            "citation": data.get("citation", "Unknown"),
+            "has_scoring_file": "ftp_scoring_file" in data,
+            "training_samples": data.get("samples_variants_numbers", {}).get(
+                "training", 0
+            ),
+            "raw_metadata": data,
         }
 
     except Exception as e:
         st.error(f"Failed to get PGS model summary for {pgs_id}: {str(e)}")
         return None
+
 
 @api_call_with_retry()
 def get_gnomad_population_data(rsid, use_cache=True):
@@ -544,39 +564,45 @@ def get_gnomad_population_data(rsid, use_cache=True):
             population_data = []
 
             # Global frequencies
-            if 'exome' in data:
-                exome = data['exome']
-                if exome.get('an', 0) > 0:
-                    population_data.append({
-                        "Population": "Global (Exome)",
-                        "Allele": data.get('alt', 'ALT'),
-                        "Frequency": exome.get('af', 0),
-                        "Allele_Count": exome.get('ac', 0),
-                        "Total_Count": exome.get('an', 0)
-                    })
+            if "exome" in data:
+                exome = data["exome"]
+                if exome.get("an", 0) > 0:
+                    population_data.append(
+                        {
+                            "Population": "Global (Exome)",
+                            "Allele": data.get("alt", "ALT"),
+                            "Frequency": exome.get("af", 0),
+                            "Allele_Count": exome.get("ac", 0),
+                            "Total_Count": exome.get("an", 0),
+                        }
+                    )
 
-            if 'genome' in data:
-                genome = data['genome']
-                if genome.get('an', 0) > 0:
-                    population_data.append({
-                        "Population": "Global (Genome)",
-                        "Allele": data.get('alt', 'ALT'),
-                        "Frequency": genome.get('af', 0),
-                        "Allele_Count": genome.get('ac', 0),
-                        "Total_Count": genome.get('an', 0)
-                    })
+            if "genome" in data:
+                genome = data["genome"]
+                if genome.get("an", 0) > 0:
+                    population_data.append(
+                        {
+                            "Population": "Global (Genome)",
+                            "Allele": data.get("alt", "ALT"),
+                            "Frequency": genome.get("af", 0),
+                            "Allele_Count": genome.get("ac", 0),
+                            "Total_Count": genome.get("an", 0),
+                        }
+                    )
 
             # Population-specific frequencies
-            if 'populations' in data:
-                for pop in data['populations']:
-                    if pop.get('an', 0) > 0:
-                        population_data.append({
-                            "Population": pop['id'],
-                            "Allele": data.get('alt', 'ALT'),
-                            "Frequency": pop.get('af', 0),
-                            "Allele_Count": pop.get('ac', 0),
-                            "Total_Count": pop.get('an', 0)
-                        })
+            if "populations" in data:
+                for pop in data["populations"]:
+                    if pop.get("an", 0) > 0:
+                        population_data.append(
+                            {
+                                "Population": pop["id"],
+                                "Allele": data.get("alt", "ALT"),
+                                "Frequency": pop.get("af", 0),
+                                "Allele_Count": pop.get("ac", 0),
+                                "Total_Count": pop.get("an", 0),
+                            }
+                        )
 
             if population_data:
                 logger.info(f"Successfully processed gnomAD REST data for {rsid}")
@@ -615,7 +641,12 @@ def get_gnomad_population_data(rsid, use_cache=True):
     }
     """
 
-    graphql_data = make_api_request(base_url, {"query": query, "variables": {"variantId": rsid}}, method='POST', use_cache=use_cache)
+    graphql_data = make_api_request(
+        base_url,
+        {"query": query, "variables": {"variantId": rsid}},
+        method="POST",
+        use_cache=use_cache,
+    )
 
     if graphql_data is None:
         logger.error("gnomAD GraphQL API request failed")
@@ -623,46 +654,56 @@ def get_gnomad_population_data(rsid, use_cache=True):
 
     try:
         logger.debug(f"Processing gnomAD GraphQL response: {graphql_data}")
-        if 'data' in graphql_data and 'variant' in graphql_data['data'] and graphql_data['data']['variant']:
-            variant = graphql_data['data']['variant']
+        if (
+            "data" in graphql_data
+            and "variant" in graphql_data["data"]
+            and graphql_data["data"]["variant"]
+        ):
+            variant = graphql_data["data"]["variant"]
             population_data = []
 
             # Global frequencies
-            if variant.get('exome'):
-                exome_ac = variant['exome']['ac']
-                exome_an = variant['exome']['an']
+            if variant.get("exome"):
+                exome_ac = variant["exome"]["ac"]
+                exome_an = variant["exome"]["an"]
                 if exome_an > 0:
-                    population_data.append({
-                        "Population": "Global (Exome)",
-                        "Allele": variant['alt'],
-                        "Frequency": exome_ac / exome_an,
-                        "Allele_Count": exome_ac,
-                        "Total_Count": exome_an
-                    })
+                    population_data.append(
+                        {
+                            "Population": "Global (Exome)",
+                            "Allele": variant["alt"],
+                            "Frequency": exome_ac / exome_an,
+                            "Allele_Count": exome_ac,
+                            "Total_Count": exome_an,
+                        }
+                    )
 
-            if variant.get('genome'):
-                genome_ac = variant['genome']['ac']
-                genome_an = variant['genome']['an']
+            if variant.get("genome"):
+                genome_ac = variant["genome"]["ac"]
+                genome_an = variant["genome"]["an"]
                 if genome_an > 0:
-                    population_data.append({
-                        "Population": "Global (Genome)",
-                        "Allele": variant['alt'],
-                        "Frequency": genome_ac / genome_an,
-                        "Allele_Count": genome_ac,
-                        "Total_Count": genome_an
-                    })
+                    population_data.append(
+                        {
+                            "Population": "Global (Genome)",
+                            "Allele": variant["alt"],
+                            "Frequency": genome_ac / genome_an,
+                            "Allele_Count": genome_ac,
+                            "Total_Count": genome_an,
+                        }
+                    )
 
             # Population-specific frequencies
-            if variant.get('populations'):
-                for pop in variant['populations']:
-                    if pop['an'] > 0:
-                        population_data.append({
-                            "Population": pop['id'],
-                            "Allele": variant['alt'],
-                            "Frequency": pop['ac'] / pop['an'],
-                            "Allele_Count": pop['ac'],
-                            "Total_Count": pop['an']
-                        })
+            if variant.get("populations"):
+                for pop in variant["populations"]:
+                    if pop["an"] > 0:
+                        population_data.append(
+                            {
+                                "Population": pop["id"],
+                                "Allele": variant["alt"],
+                                "Frequency": pop["ac"] / pop["an"],
+                                "Allele_Count": pop["ac"],
+                                "Total_Count": pop["an"],
+                            }
+                        )
 
             if population_data:
                 logger.info(f"Successfully processed gnomAD GraphQL data for {rsid}")
@@ -681,6 +722,7 @@ def get_gnomad_population_data(rsid, use_cache=True):
         logger.error(f"GraphQL response: {graphql_data}")
         st.error(f"Error processing gnoAD GraphQL data for {rsid}: {e}")
         return None
+
 
 @api_call_with_retry()
 def search_pubmed(query, max_results=20, search_type="general", use_cache=True):
@@ -717,15 +759,15 @@ def search_pubmed(query, max_results=20, search_type="general", use_cache=True):
         "retmode": "json",
         "retmax": max_results,
         "retmin": 0,
-        "sort": "relevance"
+        "sort": "relevance",
     }
 
     search_data = make_api_request(search_url, search_params, use_cache=use_cache)
 
-    if search_data is None or 'esearchresult' not in search_data:
+    if search_data is None or "esearchresult" not in search_data:
         return []
 
-    ids = search_data['esearchresult'].get('idlist', [])
+    ids = search_data["esearchresult"].get("idlist", [])
 
     if not ids:
         return []
@@ -735,45 +777,46 @@ def search_pubmed(query, max_results=20, search_type="general", use_cache=True):
     fetch_params = {
         "db": "pubmed",
         "id": ",".join(ids[:max_results]),
-        "retmode": "json"
+        "retmode": "json",
     }
 
     fetch_data = make_api_request(fetch_url, fetch_params, use_cache=use_cache)
 
-    if fetch_data is None or 'result' not in fetch_data:
+    if fetch_data is None or "result" not in fetch_data:
         return []
 
     articles = []
     for pubmed_id in ids[:max_results]:
-        if pubmed_id in fetch_data['result']:
-            article = fetch_data['result'][pubmed_id]
+        if pubmed_id in fetch_data["result"]:
+            article = fetch_data["result"][pubmed_id]
 
             article_summary = {
-                'pmid': pubmed_id,
-                'title': article.get('title', 'No title available'),
-                'authors': article.get('authors', []),
-                'journal': article.get('source', 'Unknown journal'),
-                'pub_date': article.get('pubdate', 'Unknown date'),
-                'abstract': article.get('abstract', ''),
-                'doi': article.get('elocationid', ''),
-                'url': f"https://pubmed.ncbi.nlm.nih.gov/{pubmed_id}/"
+                "pmid": pubmed_id,
+                "title": article.get("title", "No title available"),
+                "authors": article.get("authors", []),
+                "journal": article.get("source", "Unknown journal"),
+                "pub_date": article.get("pubdate", "Unknown date"),
+                "abstract": article.get("abstract", ""),
+                "doi": article.get("elocationid", ""),
+                "url": f"https://pubmed.ncbi.nlm.nih.gov/{pubmed_id}/",
             }
 
             # Format authors
-            if article_summary['authors']:
+            if article_summary["authors"]:
                 author_names = []
-                for author in article_summary['authors'][:3]:  # Show first 3 authors
-                    if 'name' in author:
-                        author_names.append(author['name'])
-                if len(article_summary['authors']) > 3:
+                for author in article_summary["authors"][:3]:  # Show first 3 authors
+                    if "name" in author:
+                        author_names.append(author["name"])
+                if len(article_summary["authors"]) > 3:
                     author_names.append("et al.")
-                article_summary['authors_formatted'] = ", ".join(author_names)
+                article_summary["authors_formatted"] = ", ".join(author_names)
             else:
-                article_summary['authors_formatted'] = "Unknown"
+                article_summary["authors_formatted"] = "Unknown"
 
             articles.append(article_summary)
 
     return articles
+
 
 @api_call_with_retry()
 def get_pubmed_abstract(pmid, use_cache=True):
@@ -791,11 +834,7 @@ def get_pubmed_abstract(pmid, use_cache=True):
         return None
 
     fetch_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
-    fetch_params = {
-        "db": "pubmed",
-        "id": pmid,
-        "retmode": "xml"
-    }
+    fetch_params = {"db": "pubmed", "id": pmid, "retmode": "xml"}
 
     response_text = make_api_request(fetch_url, fetch_params, use_cache=use_cache)
 
@@ -806,43 +845,45 @@ def get_pubmed_abstract(pmid, use_cache=True):
         # Parse XML response
         root = ET.fromstring(response_text)
 
-        article = root.find('.//PubmedArticle')
+        article = root.find(".//PubmedArticle")
         if article is None:
             return None
 
         # Extract title
-        title_elem = article.find('.//ArticleTitle')
+        title_elem = article.find(".//ArticleTitle")
         title = title_elem.text if title_elem is not None else "No title available"
 
         # Extract abstract
-        abstract_elem = article.find('.//AbstractText')
-        abstract = abstract_elem.text if abstract_elem is not None else "No abstract available"
+        abstract_elem = article.find(".//AbstractText")
+        abstract = (
+            abstract_elem.text if abstract_elem is not None else "No abstract available"
+        )
 
         # Extract authors
         authors = []
-        author_elems = article.findall('.//Author')
+        author_elems = article.findall(".//Author")
         for author_elem in author_elems[:5]:  # Limit to 5 authors
-            last_name = author_elem.find('LastName')
-            fore_name = author_elem.find('ForeName')
+            last_name = author_elem.find("LastName")
+            fore_name = author_elem.find("ForeName")
             if last_name is not None and fore_name is not None:
                 authors.append(f"{fore_name.text} {last_name.text}")
 
         # Extract journal
-        journal_elem = article.find('.//Journal/Title')
+        journal_elem = article.find(".//Journal/Title")
         journal = journal_elem.text if journal_elem is not None else "Unknown journal"
 
         # Extract publication date
-        pub_date_elem = article.find('.//PubDate/Year')
+        pub_date_elem = article.find(".//PubDate/Year")
         pub_date = pub_date_elem.text if pub_date_elem is not None else "Unknown date"
 
         return {
-            'pmid': pmid,
-            'title': title,
-            'abstract': abstract,
-            'authors': authors,
-            'journal': journal,
-            'pub_date': pub_date,
-            'url': f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/"
+            "pmid": pmid,
+            "title": title,
+            "abstract": abstract,
+            "authors": authors,
+            "journal": journal,
+            "pub_date": pub_date,
+            "url": f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/",
         }
 
     except ET.ParseError as e:
@@ -852,6 +893,7 @@ def get_pubmed_abstract(pmid, use_cache=True):
         st.error(f"Error processing PubMed data for {pmid}: {e}")
         return None
 
+
 def get_api_health_status():
     """
     Check the health status of all integrated APIs.
@@ -860,96 +902,100 @@ def get_api_health_status():
         Dictionary with API health status
     """
     health_status = {
-        'clinvar': {'status': 'unknown', 'last_checked': None, 'response_time': None},
-        'pharmgkb': {'status': 'unknown', 'last_checked': None, 'response_time': None},
-        'gnomad': {'status': 'unknown', 'last_checked': None, 'response_time': None},
-        'pubmed': {'status': 'unknown', 'last_checked': None, 'response_time': None},
-        'pgs_catalog': {'status': 'unknown', 'last_checked': None, 'response_time': None}
+        "clinvar": {"status": "unknown", "last_checked": None, "response_time": None},
+        "pharmgkb": {"status": "unknown", "last_checked": None, "response_time": None},
+        "gnomad": {"status": "unknown", "last_checked": None, "response_time": None},
+        "pubmed": {"status": "unknown", "last_checked": None, "response_time": None},
+        "pgs_catalog": {
+            "status": "unknown",
+            "last_checked": None,
+            "response_time": None,
+        },
     }
 
     # Test ClinVar
     try:
         start_time = time.time()
-        test_result = get_clinvar_data(['rs1801133'], use_cache=False)
+        test_result = get_clinvar_data(["rs1801133"], use_cache=False)
         response_time = time.time() - start_time
-        health_status['clinvar'] = {
-            'status': 'healthy' if test_result is not None else 'unhealthy',
-            'last_checked': datetime.now().isoformat(),
-            'response_time': round(response_time, 2)
+        health_status["clinvar"] = {
+            "status": "healthy" if test_result is not None else "unhealthy",
+            "last_checked": datetime.now().isoformat(),
+            "response_time": round(response_time, 2),
         }
     except Exception:
-        health_status['clinvar'] = {
-            'status': 'unhealthy',
-            'last_checked': datetime.now().isoformat(),
-            'response_time': None
+        health_status["clinvar"] = {
+            "status": "unhealthy",
+            "last_checked": datetime.now().isoformat(),
+            "response_time": None,
         }
 
     # Test PharmGKB
     try:
         start_time = time.time()
-        test_result = get_pharmgkb_data(['rs1801133'], use_cache=False)
+        test_result = get_pharmgkb_data(["rs1801133"], use_cache=False)
         response_time = time.time() - start_time
-        health_status['pharmgkb'] = {
-            'status': 'healthy' if test_result is not None else 'unhealthy',
-            'last_checked': datetime.now().isoformat(),
-            'response_time': round(response_time, 2)
+        health_status["pharmgkb"] = {
+            "status": "healthy" if test_result is not None else "unhealthy",
+            "last_checked": datetime.now().isoformat(),
+            "response_time": round(response_time, 2),
         }
     except Exception:
-        health_status['pharmgkb'] = {
-            'status': 'unhealthy',
-            'last_checked': datetime.now().isoformat(),
-            'response_time': None
+        health_status["pharmgkb"] = {
+            "status": "unhealthy",
+            "last_checked": datetime.now().isoformat(),
+            "response_time": None,
         }
 
     # Test gnoAD
     try:
         start_time = time.time()
-        test_result = get_gnomad_population_data('rs1801133', use_cache=False)
+        test_result = get_gnomad_population_data("rs1801133", use_cache=False)
         response_time = time.time() - start_time
-        health_status['gnomad'] = {
-            'status': 'healthy' if test_result is not None else 'unhealthy',
-            'last_checked': datetime.now().isoformat(),
-            'response_time': round(response_time, 2)
+        health_status["gnomad"] = {
+            "status": "healthy" if test_result is not None else "unhealthy",
+            "last_checked": datetime.now().isoformat(),
+            "response_time": round(response_time, 2),
         }
     except Exception:
-        health_status['gnomad'] = {
-            'status': 'unhealthy',
-            'last_checked': datetime.now().isoformat(),
-            'response_time': None
+        health_status["gnomad"] = {
+            "status": "unhealthy",
+            "last_checked": datetime.now().isoformat(),
+            "response_time": None,
         }
 
     # Test PubMed
     try:
         start_time = time.time()
-        test_result = search_pubmed('BRCA1', max_results=1, use_cache=False)
+        test_result = search_pubmed("BRCA1", max_results=1, use_cache=False)
         response_time = time.time() - start_time
-        health_status['pubmed'] = {
-            'status': 'healthy' if test_result is not None else 'unhealthy',
-            'last_checked': datetime.now().isoformat(),
-            'response_time': round(response_time, 2)
+        health_status["pubmed"] = {
+            "status": "healthy" if test_result is not None else "unhealthy",
+            "last_checked": datetime.now().isoformat(),
+            "response_time": round(response_time, 2),
         }
     except Exception:
-        health_status['pubmed'] = {
-            'status': 'unhealthy',
-            'last_checked': datetime.now().isoformat(),
-            'response_time': None
+        health_status["pubmed"] = {
+            "status": "unhealthy",
+            "last_checked": datetime.now().isoformat(),
+            "response_time": None,
         }
 
     # Test PGS Catalog
     try:
         start_time = time.time()
-        test_result = get_pgs_catalog_data('breast cancer', max_results=1)
+        test_result = get_pgs_catalog_data("breast cancer", max_results=1)
         response_time = time.time() - start_time
-        health_status['pgs_catalog'] = {
-            'status': 'healthy' if test_result is not None else 'unhealthy',
-            'last_checked': datetime.now().isoformat(),
-            'response_time': round(response_time, 2)
+        health_status["pgs_catalog"] = {
+            "status": "healthy" if test_result is not None else "unhealthy",
+            "last_checked": datetime.now().isoformat(),
+            "response_time": round(response_time, 2),
         }
     except Exception:
-        health_status['pgs_catalog'] = {
-            'status': 'unhealthy',
-            'last_checked': datetime.now().isoformat(),
-            'response_time': None
+        health_status["pgs_catalog"] = {
+            "status": "unhealthy",
+            "last_checked": datetime.now().isoformat(),
+            "response_time": None,
         }
 
     return health_status

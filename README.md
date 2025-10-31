@@ -9,10 +9,39 @@ A comprehensive Streamlit-based web application for personal genomic analysis, p
 ### Core Analysis Modules
 - **Clinical Risk & Carrier Status**: Assess genetic risks for 50+ diseases and carrier status for inherited conditions using ClinVar and local databases
 - **Pharmacogenomics (PGx) Report**: Analyze how genetics affect drug metabolism and response for 12+ medications using star allele genotyping and CPIC guidelines
-- **Polygenic Risk Score (PRS) Dashboard**: Calculate risk scores for complex diseases using both simplified (3-5 SNPs) and genome-wide models from PGS Catalog
+- **Polygenic Risk Score (PRS) Dashboard**: Calculate risk scores for complex diseases using both simplified (3-5 SNPs) and genome-wide models from PGS Catalog with enhanced explainability
 - **Holistic Wellness & Trait Profile**: Explore genetic influences on 30+ wellness traits including nutritional genetics, fitness profiles, and lifestyle factors
-- **Advanced Analytics & Exploration**: Deep dive with custom queries, population frequency analysis, and research tools using bioinformatics utilities
+- **Advanced Analytics & Exploration**: Deep dive with custom queries, population frequency analysis, functional impact analysis, and research tools using bioinformatics utilities
 - **Data Portability**: Export and manage genetic data in multiple formats with comprehensive metadata
+
+### Recent Upgrades & Enhancements
+
+#### 🚀 Performance & Data Processing
+- **Polars Migration**: Upgraded to Polars DataFrames for 10-100x faster data processing and memory efficiency compared to traditional Pandas workflows
+- **Optimized Parsing**: Enhanced DNA file parsing with Polars for AncestryDNA, 23andMe, MyHeritage, and LivingDNA formats
+
+#### 🧬 Ancestry Inference Improvements
+- **Advanced Ancestry Detection**: PCA-based and KNN-based ancestry inference using ancestry-informative markers (AIMs)
+- **Multi-Method Approach**: Combines frequency-based, PCA-based, and clustering-based inference for higher accuracy
+- **Ancestry-Adjusted PRS**: Automatic ancestry inference for more accurate polygenic risk score calculations across diverse populations
+- **Confidence Scoring**: Provides confidence scores for ancestry predictions with validation metrics
+
+#### 📊 Linkage Disequilibrium (LD) Heatmaps
+- **LD Matrix Visualization**: Interactive heatmaps showing linkage disequilibrium patterns between genetic variants
+- **Population-Specific LD**: LD calculations adjusted for different ancestral populations
+- **Research Tools**: Advanced analytics for geneticists and researchers studying haplotype blocks
+
+#### 🔬 Functional Impact Analysis
+- **SNP Effect Prediction**: Comprehensive analysis of how genetic variants affect protein function and enzyme activity
+- **Mutation Classification**: Automated classification of missense, synonymous, and regulatory mutations
+- **Drug Metabolism Insights**: Enhanced predictions for pharmacogenomic variants affecting drug response
+- **Sequence Context Analysis**: Integration with BioPython for detailed sequence-based functional predictions
+
+#### 📈 PRS Explainability Features
+- **Transparent Scoring**: Detailed breakdown of how each SNP contributes to polygenic risk scores
+- **Model Validation**: Comprehensive validation metrics for PRS calculations including coverage percentage and confidence intervals
+- **Ancestry Adjustments**: Population-specific adjustments for more accurate risk assessments
+- **Educational Insights**: Clear explanations of PRS methodology and limitations for better user understanding
 
 ### Enhanced PDF Report Generator
 - **Educational Journey**: Transforms genetic data into engaging learning experiences with analogies and explanations
@@ -57,6 +86,10 @@ A comprehensive Streamlit-based web application for personal genomic analysis, p
 - pip package manager
 - Git
 - 4GB+ RAM recommended for genome-wide PRS
+- Additional dependencies for enhanced features:
+  - Polars >=0.19.0 (for high-performance data processing)
+  - scikit-learn >=1.3.0 (for ancestry inference and machine learning)
+  - statsmodels >=0.14.0 (for statistical analysis and LD calculations)
 
 ### Quick Start
 ```bash
@@ -153,9 +186,10 @@ Ensure the files are placed in the `data/` directory:
 #### Polygenic Risk Scores (PRS)
 - Simplified models (3-5 SNPs) for quick assessment
 - Genome-wide models (thousands of SNPs) from PGS Catalog
-- Ancestry-aware calculations with automatic inference
+- Ancestry-aware calculations with automatic inference and confidence scoring
+- PRS Explainability: Detailed breakdown of SNP contributions and model validation
 - Lifetime risk projections with scenario analysis
-- Population comparison visualizations
+- Population comparison visualizations with ancestry adjustments
 
 #### Wellness & Trait Analysis
 - Nutritional genetics (lactose tolerance, caffeine metabolism, vitamin processing)
@@ -187,10 +221,11 @@ Ensure the files are placed in the `data/` directory:
 ### Core Technologies
 - **Frontend**: Streamlit with responsive design
 - **Backend**: Python 3.8+ with async processing
-- **Data Processing**: Pandas, NumPy, SciPy for statistical analysis
-- **Visualization**: Plotly, Matplotlib, Seaborn for interactive charts
+- **Data Processing**: Polars (primary), Pandas, NumPy, SciPy for statistical analysis
+- **Machine Learning**: scikit-learn for ancestry inference and PRS modeling
+- **Visualization**: Plotly, Matplotlib, Seaborn for interactive charts and LD heatmaps
 - **PDF Generation**: ReportLab with custom educational templates
-- **Bioinformatics**: Biopython, PyVCF, PySAM, PyFAIDX for sequence analysis
+- **Bioinformatics**: Biopython, PyVCF, PySAM, PyFAIDX for sequence analysis and functional impact
 - **APIs**: RESTful integration with ClinVar, PharmGKB, PGS Catalog, PubMed, gnomAD
 - **Testing**: pytest with comprehensive unit and integration tests
 
@@ -199,14 +234,15 @@ Ensure the files are placed in the `data/` directory:
 genetics/
 ├── src/                          # Source code
 │   ├── app.py                    # Main Streamlit application
-│   ├── utils.py                  # Utility functions and DNA file parsing
+│   ├── utils.py                  # Utility functions and DNA file parsing (Polars-enabled)
 │   ├── render_*.py               # Module-specific renderers
-│   ├── bioinformatics_utils.py   # Advanced SNP analysis tools
+│   ├── bioinformatics_utils.py   # Advanced SNP analysis tools with functional impact
 │   ├── api_functions.py          # External API integrations with caching
 │   ├── local_data_utils.py       # Offline dataset management
 │   ├── pgx_star_alleles.py       # Star allele genotyping
-│   ├── genomewide_prs.py         # Genome-wide PRS calculations
-│   ├── lifetime_risk.py         # Lifetime risk projections
+│   ├── genomewide_prs.py         # Genome-wide PRS calculations with explainability
+│   ├── ancestry_inference.py     # Advanced ancestry inference (PCA/KNN-based)
+│   ├── lifetime_risk.py          # Lifetime risk projections
 │   ├── pdf_generator/            # Enhanced PDF generator
 │   │   ├── main.py              # PDF orchestration
 │   │   ├── sections.py          # Report sections
@@ -218,11 +254,18 @@ genetics/
 │   │   ├── gene_annotations.tsv
 │   │   ├── snp_annotations.tsv
 │   │   └── population_frequencies.tsv
+│   ├── ancestry_knn_model.joblib # KNN ancestry model
+│   ├── ancestry_pca_model.joblib # PCA ancestry model
+│   ├── ancestry_snps.npy         # Ancestry-informative SNPs
 │   ├── clinvar.vcf.gz           # ClinVar database
 │   └── cache/                   # API response cache
 ├── tests/                        # Test suite
 │   ├── test_*.py                # Unit and integration tests
-│   └── test_enhanced_pdf.py     # PDF generator tests
+│   ├── test_polars_migration.py  # Polars migration tests
+│   ├── test_ancestry_inference.py # Ancestry inference tests
+│   ├── test_ld_heatmaps.py       # LD heatmap tests
+│   ├── test_functional_impact.py # Functional impact tests
+│   └── test_prs_explainability.py # PRS explainability tests
 ├── docs/                         # Documentation
 └── requirements.txt             # Python dependencies
 ```
@@ -255,7 +298,11 @@ python -m pytest tests/test_integration.py
 - **Unit Tests**: Individual function testing
 - **Integration Tests**: API and data pipeline testing
 - **PDF Generation Tests**: Report generation validation
-- **Bioinformatics Tests**: SNP analysis accuracy
+- **Bioinformatics Tests**: SNP analysis accuracy and functional impact
+- **Polars Migration Tests**: Data processing performance and compatibility
+- **Ancestry Inference Tests**: PCA/KNN model accuracy and validation
+- **LD Heatmap Tests**: Linkage disequilibrium calculations and visualization
+- **PRS Explainability Tests**: Risk score transparency and model validation
 - **UI Tests**: Streamlit interface functionality
 
 ## 🤝 Contributing
@@ -283,17 +330,22 @@ We welcome contributions from the genomics, bioinformatics, and healthcare commu
 - [Analysis Modules Overview](docs/analysis-modules.md)
 - [PDF Report Guide](docs/pdf-reports.md)
 - [Troubleshooting FAQ](docs/troubleshooting.md)
+- [New Features Guide](docs/new-features.md) - Polars migration, ancestry inference, LD heatmaps, functional impact, PRS explainability
 
 ### Technical Documentation
 - [API Reference](docs/api-reference.md)
 - [Data Sources Guide](docs/data-sources.md)
 - [Development Setup](docs/development.md)
 - [Testing Guide](docs/testing.md)
+- [Performance Optimization](docs/performance.md) - Polars best practices and benchmarking
 
 ### Scientific References
 - [Genetic Risk Factors](docs/genetic-risks.md)
 - [Pharmacogenomics Guide](docs/pharmacogenomics.md)
 - [Polygenic Risk Scores](docs/polygenic-risks.md)
+- [Ancestry Inference Methods](docs/ancestry-inference.md)
+- [Linkage Disequilibrium Analysis](docs/ld-analysis.md)
+- [Functional Impact Prediction](docs/functional-impact.md)
 
 ## 📄 License
 
@@ -330,7 +382,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Last Updated**: September 2025
-**Version**: 2.1.0
+**Last Updated**: October 2025
+**Version**: 2.2.0
 **Python Version**: 3.8+
 **License**: MIT

@@ -3,53 +3,58 @@ Main PDF generation functionality for the enhanced educational report.
 """
 
 import os
-from reportlab.platypus import SimpleDocTemplate
-from reportlab.lib.pagesizes import letter
 
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate
+
+from ..snp_data import guidance_data, pgx_snps, prs_models
 from ..utils import analyze_wellness_snps
-from ..snp_data import pgx_snps, prs_models, guidance_data
+
 try:
     from .sections import (
-        add_cover_page,
-        add_how_to_read_report,
-        add_genetic_snapshot,
-        add_detailed_health_chapter,
-        add_medication_guide_section,
-        add_executive_summary,
+        add_advanced_analytics_dashboard,
+        add_appendix_raw_data,
         add_comprehensive_carrier_status,
-        add_pharmacogenomics_profile,
+        add_cover_page,
+        add_detailed_health_chapter,
         add_disease_risk_assessment,
+        add_executive_summary,
+        add_genetic_snapshot,
+        add_how_to_read_report,
+        add_medication_guide_section,
+        add_methodology_references,
+        add_personalized_recommendations,
+        add_pharmacogenomics_profile,
         add_polygenic_risk_scores,
         add_wellness_lifestyle_profile,
-        add_advanced_analytics_dashboard,
-        add_personalized_recommendations,
-        add_methodology_references,
-        add_appendix_raw_data
     )
 except ImportError:
-    from sections import (
-        add_cover_page,
-        add_how_to_read_report,
-        add_genetic_snapshot,
-        add_detailed_health_chapter,
-        add_medication_guide_section,
-        add_executive_summary,
+    from .sections import (
+        add_advanced_analytics_dashboard,
+        add_appendix_raw_data,
         add_comprehensive_carrier_status,
-        add_pharmacogenomics_profile,
+        add_cover_page,
+        add_detailed_health_chapter,
         add_disease_risk_assessment,
+        add_executive_summary,
+        add_genetic_snapshot,
+        add_how_to_read_report,
+        add_medication_guide_section,
+        add_methodology_references,
+        add_personalized_recommendations,
+        add_pharmacogenomics_profile,
         add_polygenic_risk_scores,
         add_wellness_lifestyle_profile,
-        add_advanced_analytics_dashboard,
-        add_personalized_recommendations,
-        add_methodology_references,
-        add_appendix_raw_data
     )
+
 
 def generate_enhanced_pdf_report(dna_data, results_dir, user_id="User"):
     """
     Generate the enhanced educational PDF report with the new structure.
     """
-    doc = SimpleDocTemplate(os.path.join(results_dir, "Enhanced_Genomic_Health_Report.pdf"), pagesize=letter)
+    doc = SimpleDocTemplate(
+        os.path.join(results_dir, "Enhanced_Genomic_Health_Report.pdf"), pagesize=letter
+    )
     story = []
 
     # Section 1: Your Guide to Personal Genetics (Pages 1-2)
@@ -65,7 +70,7 @@ def generate_enhanced_pdf_report(dna_data, results_dir, user_id="User"):
         "Coronary Artery Disease",
         "Type 2 Diabetes",
         "Breast Cancer",
-        "Alzheimer's Disease"
+        "Alzheimer's Disease",
     ]
 
     for condition in key_conditions:
@@ -81,7 +86,7 @@ def generate_enhanced_pdf_report(dna_data, results_dir, user_id="User"):
     key_findings = [
         "High genetic risk for Coronary Artery Disease - discuss with cardiologist",
         "Carrier status for Cystic Fibrosis - important for family planning",
-        "Ultra-rapid metabolizer for Codeine - avoid standard doses"
+        "Ultra-rapid metabolizer for Codeine - avoid standard doses",
     ]
     health_score = 75
     add_executive_summary(story, key_findings, health_score)
@@ -97,16 +102,23 @@ def generate_enhanced_pdf_report(dna_data, results_dir, user_id="User"):
 
     try:
         doc.build(story)
-        print(f"Enhanced PDF report generated successfully: {os.path.join(results_dir, 'Enhanced_Genomic_Health_Report.pdf')}")
+        print(
+            f"Enhanced PDF report generated successfully: {os.path.join(results_dir, 'Enhanced_Genomic_Health_Report.pdf')}"
+        )
     except Exception as e:
         print(f"Error generating enhanced PDF: {e}")
+
 
 def generate_pdf_report(report_data, results_dir, dna_data):
     """
     Legacy function for backward compatibility.
     Generates the basic PDF report structure.
     """
-    doc = SimpleDocTemplate(os.path.join(results_dir, "Genomic_Health_Report.pdf"), pagesize=letter)
+    # Ensure results directory exists
+    os.makedirs(results_dir, exist_ok=True)
+    doc = SimpleDocTemplate(
+        os.path.join(results_dir, "Genomic_Health_Report.pdf"), pagesize=letter
+    )
     story = []
 
     # Add cover page
@@ -146,6 +158,8 @@ def generate_pdf_report(report_data, results_dir, dna_data):
 
     try:
         doc.build(story)
-        print(f"PDF report generated successfully: {os.path.join(results_dir, 'Genomic_Health_Report.pdf')}")
+        print(
+            f"PDF report generated successfully: {os.path.join(results_dir, 'Genomic_Health_Report.pdf')}"
+        )
     except Exception as e:
         print(f"Error generating PDF: {e}")

@@ -1,6 +1,7 @@
 # Personal Genetic Data
 # Exclude uploaded DNA files and generated results to protect user privacy
 *.txt
+!requirements.txt
 *.csv
 *.tsv
 *.vcf

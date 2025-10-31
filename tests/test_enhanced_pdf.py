@@ -3,28 +3,31 @@
 Test script for the enhanced PDF report generator.
 """
 
-import pandas as pd
-import tempfile
 import os
 import sys
+import tempfile
+
+import pandas as pd
 
 # Add parent directory to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.pdf_generator import generate_enhanced_pdf_report
 
+
 def create_sample_dna_data():
     """Create sample DNA data for testing."""
     # Synthetic data for testing purposes - not from real genetic data
     sample_data = {
-        'rsid': ['rs10757274', 'rs10757278', 'rs1333049', 'rs2383206'],
-        'genotype': ['GG', 'GG', 'CC', 'AA'],
-        'chromosome': ['9', '9', '9', '9'],
-        'position': ['22098599', '22100145', '22125205', '22125205']
+        "rsid": ["rs10757274", "rs10757278", "rs1333049", "rs2383206"],
+        "genotype": ["GG", "GG", "CC", "AA"],
+        "chromosome": ["9", "9", "9", "9"],
+        "position": ["22098599", "22100145", "22125205", "22125205"],
     }
     df = pd.DataFrame(sample_data)
-    df.set_index('rsid', inplace=True)
+    df.set_index("rsid", inplace=True)
     return df
+
 
 def test_enhanced_pdf_generation():
     """Test the enhanced PDF generation functionality."""
@@ -57,8 +60,10 @@ def test_enhanced_pdf_generation():
         except Exception as e:
             print(f"FAILURE: Error during PDF generation: {str(e)}")
             import traceback
+
             traceback.print_exc()
             return False
+
 
 def test_evidence_based_star_ratings():
     """Test evidence-based star rating system."""
@@ -82,12 +87,19 @@ def test_evidence_based_star_ratings():
 
     for condition_type, expected_stars in test_cases:
         result = get_evidence_stars("", condition_type)
-        assert result == expected_stars, f"Expected {expected_stars} for {condition_type}, got {result}"
-        assert len(result) == 5, f"Star rating should be exactly 5 characters, got {len(result)}"
-        assert result.count("★") + result.count("☆") == 5, "Should only contain stars and empty stars"
+        assert (
+            result == expected_stars
+        ), f"Expected {expected_stars} for {condition_type}, got {result}"
+        assert (
+            len(result) == 5
+        ), f"Star rating should be exactly 5 characters, got {len(result)}"
+        assert (
+            result.count("★") + result.count("☆") == 5
+        ), "Should only contain stars and empty stars"
 
     print("PASS: Evidence-based star ratings working correctly")
     return True
+
 
 def test_educational_content_validation():
     """Test that educational content contains expected elements."""
@@ -100,7 +112,7 @@ def test_educational_content_validation():
     educational_concepts = {
         "monogenic_vs_polygenic": "light switch vs dimmer switch",
         "evidence_ratings": ["★★★★★", "★★★★☆", "★★★☆☆", "★★☆☆☆", "★☆☆☆☆"],
-        "key_takeaway": "genetics load the gun, but your lifestyle pulls the trigger"
+        "key_takeaway": "genetics load the gun, but your lifestyle pulls the trigger",
     }
 
     # Verify evidence rating system
@@ -110,6 +122,7 @@ def test_educational_content_validation():
 
     print("PASS: Educational content validation passed")
     return True
+
 
 def test_comprehensive_coverage_validation():
     """Test that PDF generation includes comprehensive coverage of all major sections."""
@@ -126,11 +139,13 @@ def test_comprehensive_coverage_validation():
             pdf_path = os.path.join(temp_dir, "Enhanced_Genomic_Health_Report.pdf")
             if os.path.exists(pdf_path):
                 file_size = os.path.getsize(pdf_path)
-                assert file_size > 10000, f"PDF too small ({file_size} bytes), likely missing content"
+                assert (
+                    file_size > 10000
+                ), f"PDF too small ({file_size} bytes), likely missing content"
 
                 # Test that we can read the PDF (basic validation)
                 try:
-                    with open(pdf_path, 'rb') as f:
+                    with open(pdf_path, "rb") as f:
                         pdf_content = f.read()
                         assert len(pdf_content) > 0, "PDF content is empty"
                         assert b"%PDF" in pdf_content, "Not a valid PDF file"
@@ -138,7 +153,9 @@ def test_comprehensive_coverage_validation():
                     print(f"FAIL: Could not read generated PDF: {e}")
                     return False
 
-                print(f"SUCCESS: Comprehensive PDF generated successfully! Size: {file_size} bytes")
+                print(
+                    f"SUCCESS: Comprehensive PDF generated successfully! Size: {file_size} bytes"
+                )
                 return True
             else:
                 print("FAILURE: Enhanced PDF file was not created")
@@ -147,8 +164,10 @@ def test_comprehensive_coverage_validation():
         except Exception as e:
             print(f"FAILURE: Error during comprehensive PDF generation: {str(e)}")
             import traceback
+
             traceback.print_exc()
             return False
+
 
 def test_pdf_section_completeness():
     """Test that all major PDF sections are included."""
@@ -166,7 +185,9 @@ def test_pdf_section_completeness():
         from pdf_generator.main import generate_enhanced_pdf_report
 
     # Check that the function exists and can be called
-    assert callable(generate_enhanced_pdf_report), "generate_enhanced_pdf_report should be callable"
+    assert callable(
+        generate_enhanced_pdf_report
+    ), "generate_enhanced_pdf_report should be callable"
 
     # Test with minimal data to ensure no crashes
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -180,6 +201,7 @@ def test_pdf_section_completeness():
 
     print("PASS: PDF section completeness validation passed")
     return True
+
 
 def test_educational_content_structure():
     """Test the structure and completeness of educational content."""
@@ -195,16 +217,19 @@ def test_educational_content_structure():
         "monogenic_polygenic_analogy",
         "biological_storytelling",
         "contextualized_next_steps",
-        "methodology_transparency"
+        "methodology_transparency",
     ]
 
     # Verify each element is conceptually present in the codebase
     for element in required_educational_elements:
         # This is a structural check - in a real test, we'd parse the PDF
-        assert isinstance(element, str), f"Educational element {element} should be defined"
+        assert isinstance(
+            element, str
+        ), f"Educational element {element} should be defined"
 
     print("PASS: Educational content structure validation passed")
     return True
+
 
 def run_enhanced_pdf_tests():
     """Run all enhanced PDF tests."""
@@ -217,7 +242,7 @@ def run_enhanced_pdf_tests():
         test_educational_content_validation,
         test_comprehensive_coverage_validation,
         test_pdf_section_completeness,
-        test_educational_content_structure
+        test_educational_content_structure,
     ]
 
     passed = 0
@@ -238,6 +263,7 @@ def run_enhanced_pdf_tests():
     else:
         print("Some tests failed.")
         return False
+
 
 if __name__ == "__main__":
     success = run_enhanced_pdf_tests()
