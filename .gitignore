@@ -121,3 +121,6 @@ nosetests.xml
 .mypy_cache/
 .dmypy.json
 celerybeat-schedule
+
+# Large log files
+family_genomic_cli/logs/
