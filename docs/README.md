@@ -5,19 +5,6 @@
 A Streamlit-based web application for personal genomic analysis, providing comprehensive insights into clinical risks, pharmacogenomics, polygenic risk scores, wellness traits, and advanced analytics from DNA data uploaded by users.
 
 ## Features
-
-- **Clinical Risk & Carrier Status Analysis**: Assess genetic risks for various diseases and carrier status for inherited conditions
-- **Pharmacogenomics (PGx) Report**: Analyze how genetics affect drug metabolism and response
-- **Polygenic Risk Score (PRS) Dashboard**: Calculate risk scores for complex diseases based on multiple genetic variants with enhanced explainability
-- **Holistic Wellness & Trait Profile**: Explore genetic influences on wellness traits and lifestyle factors
-- **Advanced Analytics & Exploration**: Deep dive into genetic data with custom queries, functional impact analysis, and research tools
-- **Data Portability and Utility**: Export and manage genetic data in various formats
-- **Multi-format Support**: Compatible with AncestryDNA, 23andMe, MyHeritage, and LivingDNA file formats
-
-## Recent Enhancements
-
-### 🚀 Performance Upgrades
-- **Polars Data Processing**: 10-100x faster data processing with memory-efficient Polars DataFrames
 - **Optimized File Parsing**: Enhanced parsing for all supported DNA file formats
 
 ### 🧬 Advanced Ancestry Inference
@@ -38,6 +25,11 @@ A Streamlit-based web application for personal genomic analysis, providing compr
 - **Transparent Risk Scoring**: Detailed breakdown of SNP contributions to polygenic risk
 - **Model Validation**: Comprehensive validation metrics and coverage analysis
 - **Educational Insights**: Clear explanations of PRS methodology and limitations
+
+### 💊 Enhanced Clinical Tools
+- **Drug-Drug-Gene Interactions**: Comprehensive interaction checking considering both drug-drug and drug-gene (PGx) factors
+- **Family Analysis**: IBD/IBS analysis for determining genetic relatedness
+- **VCF Support**: Native support for VCF (Variant Call Format) files for clinical-grade data analysis
 
 ## Installation
 

@@ -4,14 +4,14 @@ import streamlit as st
 from .api_functions import get_api_health_status, get_clinvar_data
 from .local_data_utils import get_clinvar_pathogenic_variants_local
 from .snp_data import (
-    acmg_sf_variants,
     ancestry_panels,
-    cancer_snps,
-    cardiovascular_snps,
-    mito_snps,
-    neuro_snps,
-    protective_snps,
-    recessive_snps,
+    get_acmg_sf_variants,
+    get_cancer_snps,
+    get_cardiovascular_snps,
+    get_mito_snps,
+    get_neuro_snps,
+    get_protective_snps,
+    get_recessive_snps,
 )
 
 
@@ -186,6 +186,7 @@ def render_clinical_risk(dna_data):
     st.subheader("1.2. Recessive Carrier Status Report")
     if st.button("Run Recessive Carrier Status Report"):
         results = []
+        recessive_snps = get_recessive_snps()
         for rsid, info in recessive_snps.items():
             user_genotype = dna_data[dna_data.index == rsid]
             status = "Not a carrier (or not tested)"
@@ -230,6 +231,7 @@ def render_clinical_risk(dna_data):
     st.subheader("1.3. Hereditary Cancer Syndromes")
     if st.button("Run Hereditary Cancer Syndromes Analysis"):
         results = []
+        cancer_snps = get_cancer_snps()
         for rsid, info in cancer_snps.items():
             user_genotype = dna_data[dna_data.index == rsid]
             status = "No risk variant detected"
@@ -273,6 +275,7 @@ def render_clinical_risk(dna_data):
     st.subheader("1.4. Cardiovascular Conditions")
     if st.button("Run Cardiovascular Conditions Analysis"):
         results = []
+        cardiovascular_snps = get_cardiovascular_snps()
         for rsid, info in cardiovascular_snps.items():
             user_genotype = dna_data[dna_data.index == rsid]
             status = "No risk variant detected"
@@ -296,6 +299,7 @@ def render_clinical_risk(dna_data):
     st.subheader("1.5. Neurodegenerative Conditions")
     if st.button("Run Neurodegenerative Conditions Analysis"):
         results = []
+        neuro_snps = get_neuro_snps()
         for rsid, info in neuro_snps.items():
             user_genotype = dna_data[dna_data.index == rsid]
             status = "No risk variant detected"
@@ -318,6 +322,7 @@ def render_clinical_risk(dna_data):
     st.subheader("1.6. Mitochondrial Health Analysis")
     if st.button("Run Mitochondrial Health Analysis"):
         results = []
+        mito_snps = get_mito_snps()
         for rsid, info in mito_snps.items():
             user_genotype = dna_data[dna_data.index == rsid]
             status = "No risk variant detected"
@@ -340,6 +345,7 @@ def render_clinical_risk(dna_data):
     st.subheader("1.7. Protective Variant Highlights")
     if st.button("Run Protective Variant Highlights"):
         results = []
+        protective_snps = get_protective_snps()
         for rsid, info in protective_snps.items():
             user_genotype = dna_data[dna_data.index == rsid]
             status = "No protective variant detected (or not tested)"
@@ -417,6 +423,7 @@ def render_clinical_risk(dna_data):
     st.subheader("1.9. ACMG Secondary Findings Screening")
     if st.button("Run ACMG Secondary Findings Screening"):
         results = []
+        acmg_sf_variants = get_acmg_sf_variants()
         for rsid, info in acmg_sf_variants.items():
             user_genotype = dna_data[dna_data.index == rsid]
             status = "No ACMG secondary finding detected"

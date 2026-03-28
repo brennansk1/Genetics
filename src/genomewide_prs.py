@@ -16,11 +16,13 @@ from typing import Dict, List, Optional, Tuple, Union
 import numpy as np
 import pandas as pd
 import requests
-import streamlit as st
 
 from .ancestry_inference import AncestryInference, infer_ancestry_from_snps
 from .api_functions import get_api_health_status, make_api_request
+from .logging_utils import get_logger
 from .utils import CONFIG
+
+logger = get_logger(__name__)
 
 # Optional GPU dependencies
 try:
@@ -50,8 +52,10 @@ class GenomeWidePRS:
         Args:
             cache_dir: Directory for caching downloaded models
         """
+        logger.info(f"Initializing GenomeWidePRS with cache directory: {cache_dir}")
         self.cache_dir = cache_dir
         os.makedirs(cache_dir, exist_ok=True)
+        logger.debug("GenomeWidePRS initialization completed")
 
     @staticmethod
     def calculate_prs_score(
@@ -63,24 +67,31 @@ class GenomeWidePRS:
         Calculate PRS score from SNP data and effect weights
 
         Args:
-            snp_data: DataFrame with columns ['rsid', 'genotype']
+            snp_data: DataFrame with 'rsid' as index and 'genotype' column
             effect_weights: Dict mapping rsID to effect weight
             effect_alleles: Dict mapping rsID to effect allele
 
         Returns:
             Tuple of (prs_score, snps_used, total_snps)
         """
+        logger.debug(f"Starting PRS calculation with {len(effect_weights)} model SNPs")
+        logger.debug(f"SNP data shape: {snp_data.shape}")
+
         # Use GPU acceleration if enabled
         if CONFIG["performance"]["enable_gpu_prs"]:
+            logger.debug("Using GPU acceleration for PRS calculation")
             return GenomeWidePRS._calculate_prs_score_gpu(
                 snp_data, effect_weights, effect_alleles
             )
 
         # Filter to SNPs present in both data and model
-        common_snps = set(snp_data["rsid"]) & set(effect_weights.keys())
+        common_snps = set(snp_data.index) & set(effect_weights.keys())
         total_snps = len(effect_weights)
 
+        logger.debug(f"Found {len(common_snps)} common SNPs out of {total_snps} model SNPs")
+
         if not common_snps:
+            logger.warning("No common SNPs found between data and model")
             return 0.0, 0, total_snps
 
         # Calculate PRS
@@ -88,8 +99,8 @@ class GenomeWidePRS:
         snps_used = 0
 
         for rsid in common_snps:
-            if rsid in snp_data["rsid"].values:
-                genotype = snp_data.loc[snp_data["rsid"] == rsid, "genotype"].iloc[0]
+            if rsid in snp_data.index:
+                genotype = snp_data.loc[rsid, "genotype"]
                 effect_allele = effect_alleles[rsid]
                 weight = effect_weights[rsid]
 
@@ -100,6 +111,7 @@ class GenomeWidePRS:
                 prs_score += allele_count * weight
                 snps_used += 1
 
+        logger.info(f"PRS calculation completed. Score: {prs_score:.4f}, SNPs used: {snps_used}/{total_snps}")
         return prs_score, snps_used, total_snps
 
     @staticmethod
@@ -112,7 +124,7 @@ class GenomeWidePRS:
         GPU-accelerated PRS calculation using CuPy or PyTorch
 
         Args:
-            snp_data: DataFrame with columns ['rsid', 'genotype']
+            snp_data: DataFrame with 'rsid' as index and 'genotype' column
             effect_weights: Dict mapping rsID to effect weight
             effect_alleles: Dict mapping rsID to effect allele
 
@@ -121,7 +133,7 @@ class GenomeWidePRS:
         """
         try:
             # Filter to SNPs present in both data and model
-            common_snps = set(snp_data["rsid"]) & set(effect_weights.keys())
+            common_snps = set(snp_data.index) & set(effect_weights.keys())
             total_snps = len(effect_weights)
 
             if not common_snps:
@@ -132,10 +144,8 @@ class GenomeWidePRS:
             weights = []
 
             for rsid in common_snps:
-                if rsid in snp_data["rsid"].values:
-                    genotype = snp_data.loc[snp_data["rsid"] == rsid, "genotype"].iloc[
-                        0
-                    ]
+                if rsid in snp_data.index:
+                    genotype = snp_data.loc[rsid, "genotype"]
                     effect_allele = effect_alleles[rsid]
                     weight = effect_weights[rsid]
 
@@ -276,7 +286,7 @@ class GenomeWidePRS:
         Calculate ancestry-adjusted PRS score
 
         Args:
-            snp_data: DataFrame with columns ['rsid', 'genotype']
+            snp_data: DataFrame with 'rsid' as index and 'genotype' column
             effect_weights: Dict mapping rsID to effect weight
             effect_alleles: Dict mapping rsID to effect allele
             inferred_ancestry: Inferred genetic ancestry
@@ -314,6 +324,7 @@ class GenomeWidePRS:
         Returns:
             Model data dictionary or None if failed
         """
+        logger.info(f"Downloading PGS model: {pgs_id}")
         cache_file = os.path.join(self.cache_dir, f"{pgs_id}.pkl")
 
         # Check cache first if enabled
@@ -327,44 +338,49 @@ class GenomeWidePRS:
 
                     cache_time = datetime.fromisoformat(cached_data["timestamp"])
                     if datetime.now() - cache_time < timedelta(days=7):
+                        logger.info(f"Using cached PGS model: {pgs_id}")
                         return cached_data
-            except:
-                pass  # Cache corrupted, download again
+            except Exception as e:
+                logger.warning(f"Cache corrupted for {pgs_id}: {e}")
 
         try:
             # Check PGS API health
             health_status = get_api_health_status()
             pgs_status = health_status.get("pgs_catalog", {}).get("status", "unknown")
+            logger.debug(f"PGS Catalog API status: {pgs_status}")
 
             if pgs_status != "healthy":
-                st.warning(
-                    f"PGS Catalog API is currently {pgs_status}. Using cached data if available."
-                )
+                logger.warning(f"PGS Catalog API is currently {pgs_status}. Using cached data if available.")
                 if os.path.exists(cache_file):
                     try:
                         with open(cache_file, "rb") as f:
                             return pickle.load(f)
-                    except:
-                        pass
+                    except Exception as e:
+                        logger.error(f"Failed to load cached model: {e}")
 
             # Get model metadata using enhanced API request
             metadata_url = f"https://www.pgscatalog.org/rest/score/{pgs_id}"
+            logger.debug(f"Fetching metadata from: {metadata_url}")
             metadata = make_api_request(metadata_url, use_cache=use_cache)
 
             if metadata is None:
+                logger.error(f"Failed to fetch metadata for {pgs_id}")
                 return None
 
             # Get scoring file
             if "ftp_scoring_file" in metadata:
                 scoring_url = metadata["ftp_scoring_file"]
+                logger.debug(f"Fetching scoring file from: {scoring_url}")
                 scoring_response = make_api_request(scoring_url, use_cache=use_cache)
 
                 if scoring_response is None:
+                    logger.error(f"Failed to fetch scoring file for {pgs_id}")
                     return None
 
                 # Parse scoring file
                 lines = scoring_response.strip().split("\n")
                 if len(lines) < 2:
+                    logger.error(f"Invalid scoring file format for {pgs_id}")
                     return None
 
                 header = lines[0].split("\t")
@@ -401,20 +417,23 @@ class GenomeWidePRS:
                     "timestamp": datetime.now().isoformat(),
                 }
 
+                logger.info(f"Successfully downloaded PGS model {pgs_id} with {len(effect_weights)} variants")
+
                 # Cache the model
                 try:
                     with open(cache_file, "wb") as f:
                         pickle.dump(model_data, f)
+                    logger.debug(f"Cached PGS model: {pgs_id}")
                 except Exception as e:
-                    st.warning(f"Could not cache PGS model {pgs_id}: {e}")
+                    logger.warning(f"Could not cache PGS model {pgs_id}: {e}")
 
                 return model_data
             else:
-                st.warning(f"No scoring file available for PGS model {pgs_id}")
+                logger.warning(f"No scoring file available for PGS model {pgs_id}")
                 return None
 
         except Exception as e:
-            st.error(f"Failed to download PGS model {pgs_id}: {str(e)}")
+            logger.error(f"Failed to download PGS model {pgs_id}: {str(e)}")
             return None
 
     def calculate_genomewide_prs(
@@ -436,12 +455,16 @@ class GenomeWidePRS:
         Returns:
             Dictionary with PRS results
         """
+        logger.info(f"Starting genome-wide PRS calculation for {pgs_id}")
+        logger.debug(f"Ancestry adjustment: {use_ancestry_adjustment}")
+
         if progress_callback:
             progress_callback("Downloading PGS model...")
 
         # Download model
         model = self.download_pgs_model(pgs_id)
         if not model:
+            logger.error(f"Failed to download PGS model {pgs_id}")
             return {
                 "success": False,
                 "error": f"Failed to download model {pgs_id}",
@@ -457,24 +480,43 @@ class GenomeWidePRS:
         # Perform ancestry inference if requested
         ancestry_result = None
         if use_ancestry_adjustment:
+            logger.debug("Performing ancestry inference for PRS adjustment")
             if progress_callback:
                 progress_callback("Inferring genetic ancestry...")
-            ancestry_result = infer_ancestry_from_snps(snp_data)
+            try:
+                ancestry_result = infer_ancestry_from_snps(snp_data)
+                logger.info(f"Ancestry inference completed: {ancestry_result.get('primary_ancestry', 'Unknown')}")
+            except Exception as e:
+                logger.error(f"Ancestry inference failed: {e}")
+                ancestry_result = None
 
         # Calculate PRS (with or without ancestry adjustment)
-        if use_ancestry_adjustment and ancestry_result and ancestry_result["success"]:
-            prs_score, snps_used, total_snps = (
-                self.calculate_ancestry_adjusted_prs_score(
-                    snp_data,
-                    model["effect_weights"],
-                    model["effect_alleles"],
-                    ancestry_result["primary_ancestry"],
+        try:
+            if use_ancestry_adjustment and ancestry_result and ancestry_result["success"]:
+                logger.debug("Calculating ancestry-adjusted PRS score")
+                prs_score, snps_used, total_snps = (
+                    self.calculate_ancestry_adjusted_prs_score(
+                        snp_data,
+                        model["effect_weights"],
+                        model["effect_alleles"],
+                        ancestry_result["primary_ancestry"],
+                    )
                 )
-            )
-        else:
-            prs_score, snps_used, total_snps = self.calculate_prs_score(
-                snp_data, model["effect_weights"], model["effect_alleles"]
-            )
+            else:
+                logger.debug("Calculating standard PRS score")
+                prs_score, snps_used, total_snps = self.calculate_prs_score(
+                    snp_data, model["effect_weights"], model["effect_alleles"]
+                )
+        except Exception as e:
+            logger.error(f"PRS calculation failed: {e}")
+            return {
+                "success": False,
+                "error": f"PRS calculation failed: {str(e)}",
+                "prs_score": 0.0,
+                "percentile": 50.0,
+                "snps_used": 0,
+                "total_snps": 0,
+            }
 
         if progress_callback:
             progress_callback("Calculating percentile...")
@@ -484,22 +526,30 @@ class GenomeWidePRS:
         population_mean = model.get("population_mean", prs_score * 0.8)  # Estimate
         population_std = model.get("population_std", abs(prs_score) * 0.3)  # Estimate
 
-        if use_ancestry_adjustment and ancestry_result and ancestry_result["success"]:
-            percentile = self.calculate_ancestry_adjusted_percentile(
-                prs_score,
-                population_mean,
-                population_std,
-                ancestry_result["primary_ancestry"],
-            )
-        else:
-            percentile = self.calculate_percentile(
-                prs_score, population_mean, population_std
-            )
+        try:
+            if use_ancestry_adjustment and ancestry_result and ancestry_result["success"]:
+                percentile = self.calculate_ancestry_adjusted_percentile(
+                    prs_score,
+                    population_mean,
+                    population_std,
+                    ancestry_result["primary_ancestry"],
+                )
+            else:
+                percentile = self.calculate_percentile(
+                    prs_score, population_mean, population_std
+                )
+        except Exception as e:
+            logger.error(f"Percentile calculation failed: {e}")
+            percentile = 50.0
 
         # Normalize score
-        normalized_score = self.normalize_prs_score(
-            prs_score, population_mean, population_std
-        )
+        try:
+            normalized_score = self.normalize_prs_score(
+                prs_score, population_mean, population_std
+            )
+        except Exception as e:
+            logger.error(f"Score normalization failed: {e}")
+            normalized_score = 0.0
 
         result = {
             "success": True,
@@ -534,6 +584,7 @@ class GenomeWidePRS:
                 }
             )
 
+        logger.info(f"Genome-wide PRS calculation completed for {pgs_id}. Score: {prs_score:.4f}, Percentile: {percentile:.1f}")
         return result
 
     @staticmethod
@@ -642,7 +693,7 @@ class GenomeWidePRS:
         Validate PRS calculation quality
 
         Args:
-            snp_data: DataFrame with SNP data
+            snp_data: DataFrame with SNP data (rsid as index)
             model: Model dictionary
             expected_score_range: Expected range for validation
 
@@ -667,7 +718,7 @@ class GenomeWidePRS:
             return validation_results
 
         # Check coverage
-        common_snps = set(snp_data["rsid"]) & set(effect_weights.keys())
+        common_snps = set(snp_data.index) & set(effect_weights.keys())
         validation_results["model_snps_found"] = len(common_snps)
         validation_results["coverage_percentage"] = (
             len(common_snps) / len(effect_weights) if effect_weights else 0
@@ -698,7 +749,7 @@ class GenomeWidePRS:
         Validate ancestry-adjusted PRS calculations
 
         Args:
-            snp_data: DataFrame with SNP data
+            snp_data: DataFrame with SNP data (rsid as index)
             model: Model dictionary
             ancestry_result: Ancestry inference results
 

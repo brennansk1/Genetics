@@ -418,44 +418,55 @@ def add_medication_guide_section(story, dna_data):
     )
     story.append(
         Paragraph(
-            "This section explains how your genetics may affect your response to common medications. The funnel graphics below illustrate your drug metabolism process.",
+            "This section explains how your genetics may affect your response to common medications. We analyzed your DNA against a panel of high-risk drugs.",
             intro_style,
         )
     )
 
     story.append(Spacer(1, 0.5 * inch))
 
-    # Sample medications - in real implementation, this would be based on actual PGx results
-    medications = [
-        {
-            "drug": "Codeine",
-            "gene": "CYP2D6",
-            "status": "Ultra-Rapid",
-            "stars": get_evidence_stars("", "pgx"),
-            "biological_story": "Codeine itself is inactive. Your body uses the CYP2D6 enzyme to convert it into morphine for pain relief. Because you are an Ultra-Rapid Metabolizer, your body does this conversion too fast, which can lead to dangerously high levels of morphine from a standard dose.",
-            "next_steps": [
-                "Avoid codeine and related opioids (hydrocodone, oxycodone)",
-                "Discuss alternative pain medications with your doctor",
-                "Inform all healthcare providers about this result before any prescription",
-                "Consider non-opioid alternatives like acetaminophen or NSAIDs",
-            ],
-        },
-        {
-            "drug": "Clopidogrel (Plavix)",
-            "gene": "CYP2C19",
-            "status": "Poor",
-            "stars": get_evidence_stars("", "pgx"),
-            "biological_story": "Clopidogrel is a pro-drug that requires activation by the CYP2C19 enzyme to be effective. As a poor metabolizer, you convert very little clopidogrel to its active form, reducing its effectiveness in preventing blood clots.",
-            "next_steps": [
-                "Discuss alternative antiplatelet medications with your cardiologist",
-                "Consider alternatives like ticagrelor (Brilinta) or prasugrel (Effient)",
-                "Regular monitoring of platelet function may be needed",
-                "Inform your doctor before starting clopidogrel therapy",
-            ],
-        },
-    ]
+    # Dynamic Analysis using InteractionChecker
+    try:
+        from ..drug_interactions import InteractionChecker
+    except ImportError:
+        # Fallback if running as script
+        sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        from drug_interactions import InteractionChecker
 
-    for med in medications:
+    checker = InteractionChecker(dna_data)
+    # Standard panel of drugs to check for the report
+    standard_panel = [
+        "Codeine", 
+        "Clopidogrel", 
+        "Simvastatin", 
+        "Warfarin", 
+        "Tacrolimus"
+    ]
+    
+    interactions = checker.check_drug_gene_interactions(standard_panel)
+    
+    if not interactions:
+        story.append(Paragraph("No significant genetic interactions found for the screened high-risk medications.", styles["Normal"]))
+        story.append(PageBreak())
+        return
+
+    for interaction in interactions:
+        drug = interaction['drug'].title()
+        gene = interaction['gene']
+        status = interaction['phenotype']
+        # Estimate stars based on status (simplified)
+        stars = "★★★★☆" if "Poor" in status or "Rapid" in status else "★★★☆☆"
+        
+        # Biological story (simplified generation)
+        bio_story = f"Your genetic variation in the {gene} gene affects how you metabolize {drug}. You are classified as a {status}."
+        
+        # Next steps
+        next_steps = [
+            f"Consult your doctor about {drug} dosing",
+            f"Inform pharmacists about your {status} status for {gene}",
+            interaction['recommendation']
+        ]
+
         # Medication title and result
         med_title_style = ParagraphStyle(
             "MedTitle",
@@ -464,14 +475,14 @@ def add_medication_guide_section(story, dna_data):
             spaceAfter=10,
             textColor=colors.darkred,
         )
-        story.append(Paragraph(f"Medication: {med['drug']}", med_title_style))
+        story.append(Paragraph(f"Medication: {drug}", med_title_style))
 
         result_style = ParagraphStyle(
             "MedResult", parent=styles["h3"], fontSize=12, spaceAfter=15
         )
         story.append(
             Paragraph(
-                f"Gene: {med['gene']} | Result: {med['status']} Metabolizer | Strength of Evidence: {med['stars']}",
+                f"Gene: {gene} | Result: {status} | Strength of Evidence: {stars}",
                 result_style,
             )
         )
@@ -486,8 +497,12 @@ def add_medication_guide_section(story, dna_data):
         )
         story.append(Paragraph("Your Metabolism Explained", funnel_title_style))
 
-        buf = generate_metabolism_funnel(med["drug"], med["status"], med["gene"])
-        story.append(Image(buf, width=4 * inch, height=3 * inch))
+        # Generate funnel
+        try:
+            buf = generate_metabolism_funnel(drug, status, gene)
+            story.append(Image(buf, width=4 * inch, height=3 * inch))
+        except Exception:
+            story.append(Paragraph("[Visualization unavailable]", styles["Normal"]))
 
         story.append(Spacer(1, 0.3 * inch))
 
@@ -508,7 +523,7 @@ def add_medication_guide_section(story, dna_data):
             spaceAfter=15,
             leftIndent=20,
         )
-        story.append(Paragraph(med["biological_story"], bio_style))
+        story.append(Paragraph(bio_story, bio_style))
 
         # Urgent next steps
         steps_title_style = ParagraphStyle(
@@ -527,10 +542,53 @@ def add_medication_guide_section(story, dna_data):
             spaceAfter=8,
             leftIndent=20,
         )
-        for step in med["next_steps"]:
+        for step in next_steps:
             story.append(Paragraph(f"• {step}", steps_style))
 
         story.append(PageBreak())
+
+
+def add_drug_interactions_educational(story):
+    """Add educational section about Drug-Drug Interactions."""
+    styles = getSampleStyleSheet()
+    
+    title_style = ParagraphStyle(
+        "SectionTitle",
+        parent=styles["h1"],
+        fontSize=22,
+        alignment=0,
+        spaceAfter=20,
+        textColor=colors.darkblue,
+    )
+    story.append(Paragraph("Understanding Drug-Drug Interactions", title_style))
+    
+    story.append(Paragraph(
+        "While this report focuses on how your genetics affect drug response (Drug-Gene interactions), it is also crucial to consider how different medications interact with each other (Drug-Drug interactions).",
+        styles["Normal"]
+    ))
+    story.append(Spacer(1, 0.2*inch))
+    
+    story.append(Paragraph(
+        "Common examples of Drug-Drug interactions include:",
+        styles["h3"]
+    ))
+    
+    examples = [
+        "<b>Warfarin + Aspirin:</b> Increased bleeding risk.",
+        "<b>Simvastatin + Amiodarone:</b> Increased risk of muscle damage.",
+        "<b>Clopidogrel + Omeprazole:</b> Reduced effectiveness of Clopidogrel."
+    ]
+    
+    for ex in examples:
+        story.append(Paragraph(f"• {ex}", styles["Normal"]))
+        
+    story.append(Spacer(1, 0.2*inch))
+    story.append(Paragraph(
+        "<b>Action Item:</b> Always provide your doctor and pharmacist with a complete list of medications and supplements you are taking to check for potential interactions.",
+        styles["Normal"]
+    ))
+    
+    story.append(PageBreak())
 
 
 def add_executive_summary(story, key_findings, health_score):
@@ -555,12 +613,12 @@ def add_comprehensive_carrier_status(story, dna_data):
 
     # Import SNP data
     try:
-        from ..snp_data import ancestry_panels, recessive_snps
+        from ..snp_data import ancestry_panels, get_recessive_snps
     except ImportError:
-        from snp_data import ancestry_panels, recessive_snps
+        from snp_data import ancestry_panels, get_recessive_snps
 
     # Combine all carrier conditions
-    all_carrier_conditions = dict(recessive_snps)
+    all_carrier_conditions = get_recessive_snps()
 
     # Add ancestry-specific conditions
     for ancestry, conditions in ancestry_panels.items():
@@ -670,11 +728,12 @@ def add_pharmacogenomics_profile(story, dna_data):
     story.append(Spacer(1, 0.5 * inch))
 
     # Import PGx data
-    from ..snp_data import pgx_snps
+    from ..snp_data import get_pgx_snps
 
     results = []
     analyzed_count = 0
-
+    
+    pgx_snps = get_pgx_snps()
     for rsid, info in pgx_snps.items():
         user_genotype = dna_data[dna_data.index == rsid]
         interpretation = "Not in data"
@@ -752,18 +811,18 @@ def add_disease_risk_assessment(story, dna_data):
     story.append(Paragraph("Disease Risk Assessment", styles["h1"]))
     story.append(Spacer(1, 0.5 * inch))
 
-    # Import SNP data
+    # Import SNP data functions
     try:
-        from ..snp_data import cancer_snps, cardiovascular_snps, mito_snps, neuro_snps
+        from ..snp_data import get_cancer_snps, get_cardiovascular_snps, get_mito_snps, get_neuro_snps
     except ImportError:
-        from snp_data import cancer_snps, cardiovascular_snps, mito_snps, neuro_snps
+        from snp_data import get_cancer_snps, get_cardiovascular_snps, get_mito_snps, get_neuro_snps
 
-    # Combine all risk conditions
+    # Combine all risk conditions from database
     all_risk_conditions = {}
-    all_risk_conditions.update(cancer_snps)
-    all_risk_conditions.update(cardiovascular_snps)
-    all_risk_conditions.update(neuro_snps)
-    all_risk_conditions.update(mito_snps)
+    all_risk_conditions.update(get_cancer_snps())
+    all_risk_conditions.update(get_cardiovascular_snps())
+    all_risk_conditions.update(get_neuro_snps())
+    all_risk_conditions.update(get_mito_snps())
 
     results = []
     high_risk_count = 0
@@ -976,7 +1035,7 @@ def add_polygenic_risk_scores(story, dna_data):
             )
             story.append(Image(buf, width=4 * inch, height=3 * inch))
     else:
-        story.append(Paragraph("No PRS data available for analysis.", styles["Normal"]))
+        story.append(Paragraph("No polygenic risk score analysis possible with current genetic data. This may occur when the provided genetic data does not contain sufficient variants for PRS calculation.", styles["Normal"]))
 
     story.append(PageBreak())
 
@@ -1004,13 +1063,25 @@ def add_wellness_lifestyle_profile(story, dna_data):
         )
         total_snps = len(wellness_results)
 
-        story.append(
-            Paragraph(
-                f"Analysis Summary: {found_snps}/{total_snps} wellness SNPs analyzed",
-                styles["h3"],
+        if found_snps > 0:
+            story.append(
+                Paragraph(
+                    f"Analysis Summary: {found_snps}/{total_snps} wellness SNPs analyzed",
+                    styles["h3"],
+                )
             )
-        )
-        story.append(Spacer(1, 0.3 * inch))
+            story.append(Spacer(1, 0.3 * inch))
+        else:
+            story.append(
+                Paragraph(
+                    f"No wellness-related genetic variants detected in the provided data. Analysis checked {total_snps} known wellness SNPs.",
+                    styles["h3"],
+                )
+            )
+            story.append(Spacer(1, 0.3 * inch))
+            story.append(Paragraph("This may occur when the genetic data does not include the specific variants analyzed for wellness traits.", styles["Normal"]))
+            story.append(PageBreak())
+            return
 
         # Group results by category
         categories = {

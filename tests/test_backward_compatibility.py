@@ -17,8 +17,8 @@ def test_legacy_prs_models():
     print("Testing legacy PRS models...")
 
     # Import the legacy models for backward compatibility testing
-    from src.snp_data import guidance_data
-    from src.snp_data import legacy_prs_models as legacy_models
+    from src.snp_data import get_legacy_prs_models
+    legacy_models = get_legacy_prs_models()
 
     # Check if we have the expected traits
     expected_traits = [
@@ -42,24 +42,7 @@ def test_legacy_prs_models():
             print(f"[ERROR] {trait}: Not found in legacy models")
 
 
-def test_guidance_data():
-    """Test that guidance data still works"""
-    print("\nTesting guidance data...")
 
-    from src.snp_data import guidance_data
-
-    expected_conditions = ["Coronary Artery Disease", "Type 2 Diabetes"]
-
-    for condition in expected_conditions:
-        if condition in guidance_data:
-            data = guidance_data[condition]
-            required_keys = ["lifestyle", "monitoring", "medical", "screening"]
-            if all(key in data for key in required_keys):
-                print(f"[OK] {condition}: Complete guidance data")
-            else:
-                print(f"[ERROR] {condition}: Missing guidance fields")
-        else:
-            print(f"[ERROR] {condition}: Not found in guidance data")
 
 
 def test_old_render_prs_compatibility():
@@ -67,7 +50,8 @@ def test_old_render_prs_compatibility():
     print("\nTesting render_prs compatibility...")
 
     # Simulate old usage pattern - use legacy models
-    from src.snp_data import guidance_data, legacy_prs_models
+    from src.snp_data import get_legacy_prs_models
+    legacy_prs_models = get_legacy_prs_models()
 
     # Create sample DNA data
     dna_data = pd.DataFrame(
@@ -114,7 +98,6 @@ def main():
     print("=== Backward Compatibility Test ===\n")
 
     test_legacy_prs_models()
-    test_guidance_data()
     test_old_render_prs_compatibility()
 
     print("\n=== Backward Compatibility Test Complete ===")

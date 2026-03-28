@@ -13,7 +13,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.api_functions import get_pgs_catalog_data, get_pgs_model_data
 from src.genomewide_prs import GenomeWidePRS
-from src.snp_data import get_genomewide_models, get_simple_model, prs_models
+from src.snp_data import get_genomewide_models, get_simple_model
 
 
 def test_pgs_catalog_integration():
@@ -49,12 +49,12 @@ def test_prs_calculator():
     print("\nTesting PRS calculator...")
 
     # Synthetic data for testing purposes - not from real genetic data
-    # Create sample DNA data
+    # Create sample DNA data with rsid as index (new format)
     sample_data = pd.DataFrame(
         {
-            "rsid": ["rs7903146", "rs13266634", "rs7754840"],
             "genotype": ["CT", "CC", "CC"],
-        }
+        },
+        index=["rs7903146", "rs13266634", "rs7754840"]
     )
 
     calculator = GenomeWidePRS()

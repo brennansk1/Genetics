@@ -14,14 +14,14 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.api_functions import get_clinvar_data
 from src.local_data_utils import get_clinvar_pathogenic_variants_local
 from src.snp_data import (
-    acmg_sf_variants,
+    get_acmg_sf_variants,
     ancestry_panels,
-    cancer_snps,
-    cardiovascular_snps,
-    mito_snps,
-    neuro_snps,
-    protective_snps,
-    recessive_snps,
+    get_cancer_snps,
+    get_cardiovascular_snps,
+    get_mito_snps,
+    get_neuro_snps,
+    get_protective_snps,
+    get_recessive_snps,
 )
 
 
@@ -134,6 +134,7 @@ def test_recessive_carrier_status():
     dna_data = create_sample_dna_data()
 
     results = []
+    recessive_snps = get_recessive_snps()
     for rsid, info in recessive_snps.items():
         user_genotype = dna_data[dna_data.index == rsid]
         status = "Not a carrier (or not tested)"
@@ -177,6 +178,7 @@ def test_hereditary_cancer_syndromes():
     dna_data = create_sample_dna_data()
 
     results = []
+    cancer_snps = get_cancer_snps()
     for rsid, info in cancer_snps.items():
         user_genotype = dna_data[dna_data.index == rsid]
         status = "No risk variant detected"
@@ -210,6 +212,7 @@ def test_cardiovascular_conditions():
     dna_data = create_sample_dna_data()
 
     results = []
+    cardiovascular_snps = get_cardiovascular_snps()
     for rsid, info in cardiovascular_snps.items():
         user_genotype = dna_data[dna_data.index == rsid]
         status = "No risk variant detected"
@@ -243,6 +246,7 @@ def test_neurodegenerative_conditions():
     dna_data = create_sample_dna_data()
 
     results = []
+    neuro_snps = get_neuro_snps()
     for rsid, info in neuro_snps.items():
         user_genotype = dna_data[dna_data.index == rsid]
         status = "No risk variant detected"
@@ -276,6 +280,7 @@ def test_mitochondrial_health():
     dna_data = create_sample_dna_data()
 
     results = []
+    mito_snps = get_mito_snps()
     for rsid, info in mito_snps.items():
         user_genotype = dna_data[dna_data.index == rsid]
         status = "No risk variant detected"
@@ -309,6 +314,7 @@ def test_protective_variants():
     dna_data = create_sample_dna_data()
 
     results = []
+    protective_snps = get_protective_snps()
     for rsid, info in protective_snps.items():
         user_genotype = dna_data[dna_data.index == rsid]
         status = "No protective variant detected (or not tested)"
@@ -380,6 +386,7 @@ def test_acmg_secondary_findings():
     dna_data = create_sample_dna_data()
 
     results = []
+    acmg_sf_variants = get_acmg_sf_variants()
     for rsid, info in acmg_sf_variants.items():
         user_genotype = dna_data[dna_data.index == rsid]
         status = "No ACMG secondary finding detected"

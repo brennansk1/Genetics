@@ -1,9 +1,13 @@
 import streamlit as st
 
 from .utils import analyze_wellness_snps
+from .logging_utils import get_logger
+
+logger = get_logger(__name__)
 
 
 def render_wellness_profile(dna_data):
+    logger.info("Rendering wellness profile module")
     st.header("Module 4: Holistic Wellness & Trait Profile")
     st.write(
         "This module provides engaging insights into non-clinical traits related to lifestyle, nutrition, and fitness."
@@ -26,8 +30,15 @@ def render_wellness_profile(dna_data):
         )
 
     if st.button("Analyze Wellness & Traits"):
+        logger.info("Starting wellness SNP analysis")
         with st.spinner("Analyzing your wellness SNPs..."):
-            wellness_results = analyze_wellness_snps(dna_data)
+            try:
+                wellness_results = analyze_wellness_snps(dna_data)
+                logger.info(f"Wellness analysis completed successfully. Found {len(wellness_results)} SNP results")
+            except Exception as e:
+                logger.error(f"Error during wellness SNP analysis: {str(e)}")
+                st.error("An error occurred during analysis. Please check the logs for details.")
+                return
 
         st.success("Analysis complete!")
 

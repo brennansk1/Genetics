@@ -28,11 +28,11 @@ from .local_data_utils import (
     local_data,
 )
 from .snp_data import (
-    cancer_snps,
-    cardiovascular_snps,
-    mito_snps,
-    neuro_snps,
-    recessive_snps,
+    get_cancer_snps,
+    get_cardiovascular_snps,
+    get_mito_snps,
+    get_neuro_snps,
+    get_recessive_snps,
 )
 
 
@@ -335,6 +335,10 @@ def render_advanced_analytics(dna_data):
     )
 
     # Gene selection for compound het analysis
+    recessive_snps = get_recessive_snps()
+    cancer_snps = get_cancer_snps()
+    cardiovascular_snps = get_cardiovascular_snps()
+    
     gene_options = (
         list(recessive_snps.keys())
         + list(cancer_snps.keys())

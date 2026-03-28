@@ -7,7 +7,6 @@ import os
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate
 
-from ..snp_data import guidance_data, pgx_snps, prs_models
 from ..utils import analyze_wellness_snps
 
 try:
@@ -22,6 +21,7 @@ try:
         add_genetic_snapshot,
         add_how_to_read_report,
         add_medication_guide_section,
+        add_drug_interactions_educational,
         add_methodology_references,
         add_personalized_recommendations,
         add_pharmacogenomics_profile,
@@ -40,6 +40,7 @@ except ImportError:
         add_genetic_snapshot,
         add_how_to_read_report,
         add_medication_guide_section,
+        add_drug_interactions_educational,
         add_methodology_references,
         add_personalized_recommendations,
         add_pharmacogenomics_profile,
@@ -80,7 +81,9 @@ def generate_enhanced_pdf_report(dna_data, results_dir, user_id="User"):
 
     # Section 4: Your Personalized Medication Guide
     # This includes pharmacogenomics with funnel graphics
+    # This includes pharmacogenomics with funnel graphics
     add_medication_guide_section(story, dna_data)
+    add_drug_interactions_educational(story)
 
     # Legacy sections (can be kept or restructured)
     key_findings = [

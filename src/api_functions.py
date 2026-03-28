@@ -9,9 +9,22 @@ from functools import lru_cache
 
 import pandas as pd
 import requests
-import streamlit as st
 
+from .logging_utils import get_logger
 from .utils import api_call_with_retry
+
+_logger = logging.getLogger(__name__)
+
+
+def _st_error(msg):
+    """Log errors. Streamlit removed - all feedback goes through logging."""
+    _logger.error(msg)
+
+def _st_warning(msg):
+    """Log warnings. Streamlit removed - all feedback goes through logging."""
+    _logger.warning(msg)
+
+logger = get_logger(__name__)
 
 # Configure logging
 logging.basicConfig(
@@ -128,7 +141,7 @@ def make_api_request(url, params=None, method="GET", timeout=30, use_cache=True)
 
     # Check rate limit
     if not rate_limiter.can_make_call():
-        st.warning("API rate limit reached. Please wait before making more requests.")
+        _st_warning("API rate limit reached. Please wait before making more requests.")
         return None
 
     try:
@@ -161,23 +174,23 @@ def make_api_request(url, params=None, method="GET", timeout=30, use_cache=True)
 
     except requests.exceptions.Timeout:
         logger.error(f"API request timed out for {url}")
-        st.error(f"API request timed out for {url}")
+        _st_error(f"API request timed out for {url}")
         return None
     except requests.exceptions.ConnectionError:
         logger.error(f"Connection error for {url}")
-        st.error(f"Connection error for {url}")
+        _st_error(f"Connection error for {url}")
         return None
     except requests.exceptions.HTTPError as e:
         logger.error(f"HTTP error {response.status_code} for {url}: {e}")
         logger.error(f"Response content: {response.text[:500]}...")
         if response.status_code == 429:
-            st.warning("API rate limit exceeded. Please try again later.")
+            _st_warning("API rate limit exceeded. Please try again later.")
         else:
-            st.error(f"HTTP error {response.status_code} for {url}: {e}")
+            _st_error(f"HTTP error {response.status_code} for {url}: {e}")
         return None
     except Exception as e:
         logger.error(f"Unexpected error for {url}: {e}")
-        st.error(f"Unexpected error for {url}: {e}")
+        _st_error(f"Unexpected error for {url}: {e}")
         return None
 
 
@@ -236,11 +249,11 @@ def get_clinvar_data(rsids, use_cache=True):
     except ET.ParseError as e:
         logger.error(f"Error parsing XML from ClinVar: {e}")
         logger.error(f"Response text: {response_text[:500]}...")
-        st.error(f"Error parsing XML from ClinVar: {e}")
+        _st_error(f"Error parsing XML from ClinVar: {e}")
         return None
     except Exception as e:
         logger.error(f"Unexpected error processing ClinVar data: {e}")
-        st.error(f"Unexpected error processing ClinVar data: {e}")
+        _st_error(f"Unexpected error processing ClinVar data: {e}")
         return None
 
 
@@ -298,7 +311,7 @@ def get_pharmgkb_data(rsids, use_cache=True):
         except Exception as e:
             logger.error(f"Error processing PharmGKB data for {rsid}: {e}")
             logger.error(f"Response data: {data}")
-            st.error(f"Error processing PharmGKB data for {rsid}: {e}")
+            _st_error(f"Error processing PharmGKB data for {rsid}: {e}")
             results[rsid] = "Error processing data."
 
     return results
@@ -336,10 +349,10 @@ def get_pgs_catalog_data(trait, max_results=50):
         return results
 
     except requests.exceptions.RequestException as e:
-        st.error(f"Failed to fetch PGS Catalog data for trait '{trait}': {str(e)}")
+        _st_error(f"Failed to fetch PGS Catalog data for trait '{trait}': {str(e)}")
         return []
     except Exception as e:
-        st.error(f"Error processing PGS Catalog data: {str(e)}")
+        _st_error(f"Error processing PGS Catalog data: {str(e)}")
         return []
 
 
@@ -373,7 +386,7 @@ def get_pgs_model_data(pgs_id, include_metadata=True):
             # Parse TSV content
             lines = scoring_response.text.strip().split("\n")
             if len(lines) < 2:
-                st.warning(f"Empty scoring file for PGS ID {pgs_id}")
+                _st_warning(f"Empty scoring file for PGS ID {pgs_id}")
                 return None
 
             header = lines[0].split("\t")
@@ -429,14 +442,14 @@ def get_pgs_model_data(pgs_id, include_metadata=True):
 
             return model_data
         else:
-            st.warning(f"No scoring file found for PGS ID {pgs_id}")
+            _st_warning(f"No scoring file found for PGS ID {pgs_id}")
             return None
 
     except requests.exceptions.RequestException as e:
-        st.error(f"Failed to fetch PGS model data for {pgs_id}: {str(e)}")
+        _st_error(f"Failed to fetch PGS model data for {pgs_id}: {str(e)}")
         return None
     except Exception as e:
-        st.error(f"Error processing PGS model {pgs_id}: {str(e)}")
+        _st_error(f"Error processing PGS model {pgs_id}: {str(e)}")
         return None
 
 
@@ -494,7 +507,7 @@ def search_pgs_models(query, trait_filter=None, max_results=20):
         return results
 
     except Exception as e:
-        st.error(f"Error searching PGS models: {str(e)}")
+        _st_error(f"Error searching PGS models: {str(e)}")
         return []
 
 
@@ -531,7 +544,7 @@ def get_pgs_model_summary(pgs_id):
         }
 
     except Exception as e:
-        st.error(f"Failed to get PGS model summary for {pgs_id}: {str(e)}")
+        _st_error(f"Failed to get PGS model summary for {pgs_id}: {str(e)}")
         return None
 
 
@@ -611,7 +624,7 @@ def get_gnomad_population_data(rsid, use_cache=True):
         except Exception as e:
             logger.error(f"Error processing gnoAD REST API data for {rsid}: {e}")
             logger.error(f"Response data: {data}")
-            st.error(f"Error processing gnoAD REST API data for {rsid}: {e}")
+            _st_error(f"Error processing gnoAD REST API data for {rsid}: {e}")
 
     # Fallback to GraphQL API
     logger.info(f"Trying gnomAD GraphQL API fallback for {rsid}")
@@ -710,17 +723,17 @@ def get_gnomad_population_data(rsid, use_cache=True):
                 return pd.DataFrame(population_data)
             else:
                 logger.warning(f"No population frequency data found for {rsid}")
-                st.warning(f"No population frequency data found for {rsid}")
+                _st_warning(f"No population frequency data found for {rsid}")
                 return None
         else:
             logger.warning(f"No gnoAD data found for {rsid}")
-            st.warning(f"No gnoAD data found for {rsid}")
+            _st_warning(f"No gnoAD data found for {rsid}")
             return None
 
     except Exception as e:
         logger.error(f"Error processing gnoAD GraphQL data for {rsid}: {e}")
         logger.error(f"GraphQL response: {graphql_data}")
-        st.error(f"Error processing gnoAD GraphQL data for {rsid}: {e}")
+        _st_error(f"Error processing gnoAD GraphQL data for {rsid}: {e}")
         return None
 
 
@@ -887,10 +900,10 @@ def get_pubmed_abstract(pmid, use_cache=True):
         }
 
     except ET.ParseError as e:
-        st.error(f"Error parsing PubMed XML for {pmid}: {e}")
+        _st_error(f"Error parsing PubMed XML for {pmid}: {e}")
         return None
     except Exception as e:
-        st.error(f"Error processing PubMed data for {pmid}: {e}")
+        _st_error(f"Error processing PubMed data for {pmid}: {e}")
         return None
 
 

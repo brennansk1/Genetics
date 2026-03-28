@@ -2,45 +2,78 @@ import os
 import time
 from functools import wraps
 from io import BytesIO, StringIO
+from typing import Dict, Any
+
+import logging
 
 import pandas as pd
 import polars as pl
 import requests
-import streamlit as st
+try:
+    from .vcf_parser import parse_vcf_file
+except Exception:
+    parse_vcf_file = None
 
-# Configuration section for performance optimizations
-CONFIG = {
-    "performance": {
-        "enable_parallel_processing": False,  # Toggle for Dask parallel processing
-        "enable_redis_caching": False,  # Toggle for Redis API response caching
-        "enable_sqlite_indexes": False,  # Toggle for SQLite indexes on ClinVar data
-        "enable_gpu_prs": False,  # Toggle for GPU-accelerated PRS calculations
-    },
-    "caching": {
-        "redis_host": "localhost",
-        "redis_port": 6379,
-        "redis_db": 0,
-        "cache_ttl": 3600,  # 1 hour default TTL
-    },
-    "parallel": {
-        "num_workers": None,  # None means use Dask default
-        "scheduler": "threads",  # 'threads', 'processes', or 'synchronous'
-    },
-    "gpu": {
-        "device": "cuda",  # 'cuda' or 'cpu' fallback
-        "memory_limit": None,  # GPU memory limit in MB
-    },
-    "ux_enhancements": {
-        "enable_ai_coach": False,  # Toggle for AI-Powered Genetic Health Coach
-        "enable_pwa": False,  # Toggle for Progressive Web App features
-        "enable_3d_browser": False,  # Toggle for Interactive 3D Genome Browser
-    },
-    "api_keys": {
-        "openai_api_key": os.getenv(
-            "OPENAI_API_KEY", None
-        ),  # OpenAI API key for AI Coach
-    },
-}
+logger = logging.getLogger(__name__)
+
+class AppConfig:
+    """
+    Configuration management class that loads settings from environment variables
+    with sensible defaults.
+    """
+    def __init__(self):
+        self.performance = {
+            "enable_parallel_processing": self._get_bool("ENABLE_PARALLEL_PROCESSING", False),
+            "enable_redis_caching": self._get_bool("ENABLE_REDIS_CACHING", False),
+            "enable_sqlite_indexes": self._get_bool("ENABLE_SQLITE_INDEXES", False),
+            "enable_gpu_prs": self._get_bool("ENABLE_GPU_PRS", False),
+        }
+        self.caching = {
+            "redis_host": os.getenv("REDIS_HOST", "localhost"),
+            "redis_port": int(os.getenv("REDIS_PORT", 6379)),
+            "redis_db": int(os.getenv("REDIS_DB", 0)),
+            "cache_ttl": int(os.getenv("CACHE_TTL", 3600)),
+        }
+        self.parallel = {
+            "num_workers": int(os.getenv("NUM_WORKERS")) if os.getenv("NUM_WORKERS") else None,
+            "scheduler": os.getenv("SCHEDULER", "threads"),
+        }
+        self.gpu = {
+            "device": os.getenv("GPU_DEVICE", "cuda"),
+            "memory_limit": int(os.getenv("GPU_MEMORY_LIMIT")) if os.getenv("GPU_MEMORY_LIMIT") else None,
+        }
+        self.ux_enhancements = {
+            "enable_ai_coach": self._get_bool("ENABLE_AI_COACH", False),
+            "enable_pwa": self._get_bool("ENABLE_PWA", False),
+            "enable_3d_browser": self._get_bool("ENABLE_3D_BROWSER", False),
+        }
+        self.api_keys = {
+            "openai_api_key": os.getenv("OPENAI_API_KEY", None),
+        }
+
+    def _get_bool(self, key: str, default: bool) -> bool:
+        val = os.getenv(key, str(default)).lower()
+        return val in ("true", "1", "yes", "on")
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Returns the configuration as a dictionary for backward compatibility."""
+        return {
+            "performance": self.performance,
+            "caching": self.caching,
+            "parallel": self.parallel,
+            "gpu": self.gpu,
+            "ux_enhancements": self.ux_enhancements,
+            "api_keys": self.api_keys,
+        }
+
+# Singleton instance
+_app_config = AppConfig()
+# Backward compatibility
+CONFIG = _app_config.to_dict()
+
+def get_config() -> AppConfig:
+    """Returns the application configuration singleton."""
+    return _app_config
 
 
 def api_call_with_retry(max_retries=3, delay=1):
@@ -61,13 +94,13 @@ def api_call_with_retry(max_retries=3, delay=1):
                         time.sleep(delay * (2**attempt))  # Exponential backoff
                         continue
                     else:
-                        st.error(
+                        logger.error(
                             f"API call failed after {max_retries} attempts: {str(e)}"
                         )
                         return None
                 except Exception as e:
                     last_exception = e
-                    st.error(f"Unexpected error in API call: {str(e)}")
+                    logger.error(f"Unexpected error in API call: {str(e)}")
                     return None
             return None
 
@@ -79,8 +112,16 @@ def api_call_with_retry(max_retries=3, delay=1):
 def parse_dna_file(uploaded_file, file_format="AncestryDNA"):
     """
     Parses the uploaded DNA file supporting multiple formats.
+    Accepts a file-like object with a getvalue() method or raw bytes/string.
     """
-    string_data = StringIO(uploaded_file.getvalue().decode("utf-8"))
+    if hasattr(uploaded_file, 'getvalue'):
+        string_data = StringIO(uploaded_file.getvalue().decode("utf-8"))
+    elif isinstance(uploaded_file, bytes):
+        string_data = StringIO(uploaded_file.decode("utf-8"))
+    elif isinstance(uploaded_file, str):
+        string_data = StringIO(uploaded_file)
+    else:
+        string_data = StringIO(uploaded_file.read().decode("utf-8"))
 
     if file_format == "AncestryDNA":
         # Find the start of the data
@@ -147,8 +188,8 @@ def parse_dna_file(uploaded_file, file_format="AncestryDNA"):
         )
         if "RSID" in df.columns:
             df = df.rename({"RSID": "rsid"})
-        df = df.with_columns(pl.col("RESULT").alias("genotype"))
-        df = df.select(["rsid", "genotype"])
+        if "RESULT" in df.columns:
+            df = df.with_columns(pl.col("RESULT").alias("genotype"))
 
     elif file_format == "LivingDNA":
         # LivingDNA format: rsid, genotype
@@ -157,6 +198,16 @@ def parse_dna_file(uploaded_file, file_format="AncestryDNA"):
             separator="\t",
             dtypes={"rsid": pl.Utf8},
         )
+
+    elif file_format == "VCF":
+        # Use the dedicated VCF parser
+        df = parse_vcf_file(uploaded_file)
+        # Convert to Polars for consistency with other branches if needed, 
+        # but parse_vcf_file returns Pandas DataFrame as per docstring.
+        # The function returns df.to_pandas() at the end anyway, so we can just return it directly here?
+        # No, the function expects to return df.to_pandas() at line 201.
+        # So we should convert to Polars or just return early.
+        return df
 
     else:
         raise ValueError(f"Unsupported file format: {file_format}")
@@ -171,7 +222,8 @@ def parse_dna_file(uploaded_file, file_format="AncestryDNA"):
     df = df.select(required_cols)
     df = df.drop_nulls(subset=["rsid", "genotype"])
 
-    return df
+    # Convert to Pandas DataFrame for compatibility
+    return df.to_pandas()
 
 
 def analyze_wellness_snps(dna_data):

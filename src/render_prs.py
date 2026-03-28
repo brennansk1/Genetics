@@ -13,10 +13,10 @@ from .snp_data import (
     get_genomewide_models,
     get_prs_model_categories,
     get_prs_models_by_category,
+    get_prs_models,
     get_simple_model,
     get_trait_description,
     guidance_data,
-    prs_models,
 )
 
 
@@ -77,7 +77,7 @@ def render_prs_dashboard(dna_data):
     selected_category = st.selectbox("Select Disease Category:", ["All"] + categories)
 
     if selected_category == "All":
-        available_traits = list(prs_models.keys())
+        available_traits = list(get_prs_models().keys())
     else:
         category_models = get_prs_models_by_category(selected_category)
         available_traits = list(category_models.keys())

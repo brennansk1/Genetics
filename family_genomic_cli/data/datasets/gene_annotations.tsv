@@ -1,0 +1,40 @@
+gene_symbol	chromosome	start	end	strand	description
+BRCA1	17	43044295	43125483	-	Breast cancer type 1 susceptibility protein
+BRCA2	13	32315086	32399072	-	Breast cancer type 2 susceptibility protein
+CFTR	7	117149128	117308718	+	Cystic fibrosis transmembrane conductance regulator
+APOE	19	44908684	44908822	+	Apolipoprotein E
+TP53	17	7661779	7687550	-	Tumor protein p53
+EGFR	7	55086714	55279321	+	Epidermal growth factor receptor
+TNF	6	31543104	31546897	-	Tumor necrosis factor
+IL6	7	22766645	22773996	+	Interleukin 6
+COMT	22	19941793	19961880	-	Catechol-O-methyltransferase
+DRD2	11	113409605	113475691	-	Dopamine receptor D2
+ADRB2	5	148826908	148828867	+	Adrenoceptor beta 2
+CYP2D6	22	42522500	42526883	+	Cytochrome P450 2D6
+CYP2C9	10	96702047	96710247	+	Cytochrome P450 2C9
+CYP2C19	10	96541615	96611564	+	Cytochrome P450 2C19
+UGT1A1	2	233760590	233785543	+	UDP glucuronosyltransferase 1A1
+TPMT	6	18139214	18143955	+	Thiopurine S-methyltransferase
+DPYD	1	97915614	98337758	+	Dihydropyrimidine dehydrogenase
+SLCO1B1	12	21222650	21382135	+	Solute carrier organic anion transporter 1B1
+HLA-B	6	31353872	31367067	+	Major histocompatibility complex class I B
+HLA-A	6	29942470	29949572	+	Major histocompatibility complex class I A
+MTHFR	1	11794421	11806429	+	Methylenetetrahydrofolate reductase
+FUT2	19	49206526	49218130	+	Fucosyltransferase 2
+MCM6	2	136608646	136622422	+	Minichromosome maintenance complex component 6
+CYP1A2	15	74749096	74759151	+	Cytochrome P450 1A2
+ACTN3	11	66560624	66580624	+	Actinin alpha 3
+PER3	1	7881588	7903188	+	Period circadian regulator 3
+CLOCK	4	55424197	55595797	+	Circadian locomotor output cycles protein kaput
+RGS16	1	182580000	182600000	+	Regulator of G protein signaling 16
+MEIS1	6	41790600	41890600	+	Meis homeobox 1
+TAS2R38	7	141670000	141680000	+	Taste receptor type 2 member 38
+ZEB2	2	144390000	144400000	+	Zinc finger E-box binding homeobox 2
+OR2M7	1	248050000	248060000	+	Olfactory receptor family 2 subfamily M member 7
+VEGF	6	43737946	43768648	+	Vascular endothelial growth factor A
+GC	4	71750790	71766249	+	Group-specific component
+CYP2R1	11	14893821	14902122	+	Cytochrome P450 2R1
+TERC	3	169482053	169482450	+	Telomerase RNA component
+TERT	5	1253738	1294990	+	Telomerase reverse transcriptase
+OBFC1	10	105145827	105177412	+	OB fold containing 1
+FOXO3	6	108982005	109094976	+	Forkhead box O3

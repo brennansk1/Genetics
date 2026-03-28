@@ -6,7 +6,6 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import requests  # Added for PharmGKB integration
-from Bio import Entrez  # Biopython library
 
 # import vcf  # PyVCF library (disabled due to installation issues)
 from pyliftover import LiftOver  # pyliftover library
@@ -16,6 +15,13 @@ from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, Tabl
 
 from .utils import CONFIG
 from .vcf_converter import convert_vcf_gz_to_tsv
+from .snp_data import (
+    get_recessive_snps,
+    get_protective_snps,
+    get_pgx_snps,
+    get_simple_model,
+    ancestry_panels
+)
 
 
 # --- ClinVar Pathogenic Variant Screener ---
@@ -44,20 +50,7 @@ def analyze_clinvar_variants(df, clinvar_tsv_path):
 # --- Recessive Carrier Status (Example) ---
 def analyze_recessive_carrier_status(df):
     print("\n--- Recessive Carrier Status ---")
-    recessive_snps = {
-        "rs113993960": {
-            "gene": "CFTR",
-            "condition": "Cystic Fibrosis",
-            "risk_allele": "T",
-            "interp": {"CT": "Carrier", "TT": "Affected"},
-        },
-        "rs334": {
-            "gene": "HBB",
-            "condition": "Sickle Cell Anemia",
-            "risk_allele": "A",
-            "interp": {"GA": "Carrier", "AA": "Affected"},
-        },
-    }
+    recessive_snps = get_recessive_snps()
     results = []
     for rsid, info in recessive_snps.items():
         genotype, _ = get_genotype_info(df, rsid)
@@ -83,26 +76,7 @@ def analyze_recessive_carrier_status(df):
 # --- Protective Variant Highlights (Example) ---
 def analyze_protective_variants(df):
     print("\n--- Protective Variant Highlights ---")
-    protective_snps = {
-        "rs671": {
-            "gene": "ALDH2",
-            "trait": "Alcohol Flush Protection",
-            "protective_allele": "A",
-            "interp": {
-                "GA": "Reduced Alcohol Tolerance",
-                "AA": "Strongly Reduced Alcohol Tolerance",
-            },
-        },
-        "rs1229984": {
-            "gene": "ADH1B",
-            "trait": "Alcoholism Protection",
-            "protective_allele": "A",
-            "interp": {
-                "GA": "Reduced Alcoholism Risk",
-                "AA": "Strongly Reduced Alcoholism Risk",
-            },
-        },
-    }
+    protective_snps = get_protective_snps()
     results = []
     for rsid, info in protective_snps.items():
         genotype, _ = get_genotype_info(df, rsid)
@@ -488,47 +462,7 @@ def analyze_high_impact_risks(df):
 def analyze_pgx_and_wellness(df):
     print_header("Module 2 & 4: Pharmacogenomics and Wellness Traits")
 
-    pgx_snps = {
-        "rs4244285": {
-            "gene": "CYP2C19",
-            "relevance": "Clopidogrel Metabolism",
-            "interp": {"GG": "Normal Metabolizer", "AG": "Intermediate", "AA": "Poor"},
-        },
-        "rs1057910": {
-            "gene": "CYP2C9*2",
-            "relevance": "Warfarin/NSAID Metabolism",
-            "interp": {"CC": "Normal", "CT": "Intermediate", "TT": "Poor"},
-        },
-        "rs1799853": {
-            "gene": "CYP2C9*3",
-            "relevance": "Warfarin/NSAID Metabolism",
-            "interp": {"AA": "Normal", "AC": "Intermediate", "CC": "Poor"},
-        },
-        "rs4149056": {
-            "gene": "SLCO1B1",
-            "relevance": "Simvastatin Myopathy Risk",
-            "interp": {"TT": "Normal risk", "CT": "Increased risk", "CC": "High risk"},
-        },
-        "rs9923231": {
-            "gene": "VKORC1",
-            "relevance": "Warfarin Sensitivity",
-            "interp": {"GG": "Normal sensitivity", "AG": "Increased", "AA": "High"},
-        },
-        "rs1800460": {
-            "gene": "UGT1A1",
-            "relevance": "Irinotecan (Chemo) Toxicity",
-            "interp": {"GG": "Normal", "AG": "Increased risk", "AA": "High risk"},
-        },
-        "rs3918290": {
-            "gene": "HLA-B*15:02",
-            "relevance": "Carbamazepine SJS Risk",
-            "interp": {
-                "GG": "Normal",
-                "GT": "Significantly Increased Risk",
-                "TT": "Significantly Increased Risk",
-            },
-        },
-    }
+    pgx_snps = get_pgx_snps()
 
     wellness_snps = {
         "rs762551": {
@@ -676,36 +610,13 @@ def analyze_prs(df, results_dir):
         print(f"Generated PRS graph for {condition_name}: {output_path}")
 
     # Models
-    cad_model = {
-        "rsid": ["rs10757274", "rs10757278", "rs1333049", "rs2383206"],
-        "effect_allele": ["G", "G", "C", "A"],
-        "effect_weight": [0.177, 0.198, 0.126, 0.106],
-    }
-    t2d_model = {
-        "rsid": ["rs7903146", "rs13266634", "rs7754840", "rs10811661", "rs4506565"],
-        "effect_allele": ["T", "C", "C", "T", "T"],
-        "effect_weight": [0.31, 0.14, 0.11, 0.22, 0.12],
-    }
-    afib_model = {
-        "rsid": ["rs2200733", "rs10033464", "rs6817105"],
-        "effect_allele": ["T", "T", "D"],
-        "effect_weight": [0.45, 0.30, 0.22],
-    }
-    crc_model = {
-        "rsid": ["rs6983267", "rs4939827", "rs10795668"],
-        "effect_allele": ["G", "C", "G"],
-        "effect_weight": [0.15, 0.14, 0.09],
-    }
-    prc_model = {
-        "rsid": ["rs1447295", "rs6983267"],
-        "effect_allele": ["A", "G"],
-        "effect_weight": [0.30, 0.25],
-    }
-    stroke_model = {
-        "rsid": ["rs12425791", "rs11833579", "rs2200733"],
-        "effect_allele": ["A", "A", "T"],
-        "effect_weight": [0.18, 0.15, 0.28],
-    }
+    # Models
+    cad_model = get_simple_model("Coronary Artery Disease")
+    t2d_model = get_simple_model("Type 2 Diabetes")
+    afib_model = get_simple_model("Atrial Fibrillation")
+    crc_model = get_simple_model("Colorectal Cancer")
+    prc_model = get_simple_model("Prostate Cancer")
+    stroke_model = get_simple_model("Ischemic Stroke")
 
     calculate_prs_and_plot(cad_model, "Coronary Artery Disease")
     print(

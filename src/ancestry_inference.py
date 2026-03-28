@@ -20,6 +20,9 @@ from sklearn.preprocessing import StandardScaler
 
 from .api_functions import get_api_health_status, get_gnomad_population_data
 from .local_data_utils import LocalGeneticData
+from .logging_utils import get_logger
+
+logger = get_logger(__name__)
 
 
 class AncestryInference:
@@ -36,6 +39,7 @@ class AncestryInference:
         Args:
             aims_file: Path to AIMs database file
         """
+        logger.info(f"Initializing AncestryInference with AIMs file: {aims_file}")
         self.aims_file = aims_file
         self.aims_data = None
         self.reference_populations = {}
@@ -44,22 +48,27 @@ class AncestryInference:
         self.ancestry_snps = None
         self._load_aims_data()
         self._load_ancestry_models()
+        logger.info("AncestryInference initialization completed")
 
     def _load_aims_data(self):
         """Load AIMs database and reference population frequencies."""
+        logger.debug(f"Loading AIMs data from {self.aims_file}")
         try:
             if os.path.exists(self.aims_file):
                 self.aims_data = pd.read_csv(self.aims_file, sep="\t")
+                logger.info(f"Loaded AIMs data with {len(self.aims_data)} markers")
                 self._prepare_reference_data()
             else:
                 # Use population frequencies as fallback for basic ancestry
+                logger.warning(f"AIMs file not found at {self.aims_file}, using fallback data")
                 self._load_fallback_aims()
         except Exception as e:
-            print(f"Error loading AIMs data: {e}")
+            logger.error(f"Error loading AIMs data: {e}")
             self._load_fallback_aims()
 
     def _load_fallback_aims(self):
         """Load basic AIMs from population frequencies as fallback."""
+        logger.debug("Loading fallback AIMs from population frequencies")
         try:
             local_data = LocalGeneticData()
             local_data.load_datasets()
@@ -68,9 +77,12 @@ class AncestryInference:
             if pop_freq is not None:
                 # Select SNPs with high frequency differences between populations
                 self.aims_data = self._create_basic_aims_from_pop_freq(pop_freq)
+                logger.info(f"Created fallback AIMs with {len(self.aims_data)} markers")
                 self._prepare_reference_data()
+            else:
+                logger.error("No population frequency data available for fallback AIMs")
         except Exception as e:
-            print(f"Error loading fallback AIMs: {e}")
+            logger.error(f"Error loading fallback AIMs: {e}")
 
     def _create_basic_aims_from_pop_freq(self, pop_freq: pd.DataFrame) -> pd.DataFrame:
         """Create basic AIMs from population frequency data."""
@@ -99,6 +111,7 @@ class AncestryInference:
     @lru_cache(maxsize=1)
     def _load_ancestry_models(self):
         """Load ancestry prediction models (PCA and KNN) with caching."""
+        logger.debug("Loading ancestry prediction models")
         try:
             pca_path = "data/ancestry_pca_model.joblib"
             knn_path = "data/ancestry_knn_model.joblib"
@@ -106,13 +119,16 @@ class AncestryInference:
 
             if os.path.exists(pca_path):
                 self.pca_model = joblib.load(pca_path)
+                logger.debug("Loaded PCA model")
             if os.path.exists(knn_path):
                 self.knn_model = joblib.load(knn_path)
+                logger.debug("Loaded KNN model")
             if os.path.exists(snps_path):
                 snp_data = np.load(snps_path, allow_pickle=True).item()
                 self.ancestry_snps = snp_data["rsids"]
+                logger.debug(f"Loaded ancestry SNPs: {len(self.ancestry_snps)} markers")
         except Exception as e:
-            print(f"Warning: Could not load ancestry models: {e}")
+            logger.warning(f"Could not load ancestry models: {e}")
             self.pca_model = None
             self.knn_model = None
             self.ancestry_snps = None
@@ -147,7 +163,11 @@ class AncestryInference:
         Returns:
             Dictionary with ancestry results
         """
+        logger.info(f"Starting ancestry inference with method: {method}")
+        logger.debug(f"SNP data shape: {snp_data.shape}")
+
         if self.aims_data is None:
+            logger.error("AIMs data not available for ancestry inference")
             return {
                 "success": False,
                 "error": "AIMs data not available",
@@ -157,6 +177,7 @@ class AncestryInference:
 
         try:
             if method == "frequency_based":
+                logger.debug("Using frequency-based ancestry inference")
                 result = self._frequency_based_inference(snp_data)
                 # Convert to new format
                 return {
@@ -165,8 +186,10 @@ class AncestryInference:
                     "probabilities": result.get("admixture_proportions", {}),
                 }
             elif method == "pca":
+                logger.debug("Using PCA-based ancestry inference")
                 return self._pca_based_inference(snp_data)
             elif method == "clustering":
+                logger.debug("Using clustering-based ancestry inference")
                 result = self._clustering_based_inference(snp_data)
                 # Convert to new format
                 return {
@@ -175,8 +198,10 @@ class AncestryInference:
                     "probabilities": result.get("admixture_proportions", {}),
                 }
             else:
+                logger.warning(f"Unknown method '{method}', defaulting to PCA")
                 return self._pca_based_inference(snp_data)
         except Exception as e:
+            logger.error(f"Error during ancestry inference: {str(e)}")
             return {
                 "success": False,
                 "error": str(e),

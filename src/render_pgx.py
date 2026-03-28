@@ -4,10 +4,10 @@ import streamlit as st
 from .api_functions import get_api_health_status, get_pharmgkb_data
 from .pgx_star_alleles import detect_cnv, star_caller
 from .snp_data import (
-    adverse_reaction_snps,
-    cpic_guidelines,
-    pgx_snps,
-    star_allele_definitions,
+    get_adverse_reaction_snps,
+    get_cpic_guidelines,
+    get_pgx_snps,
+    get_star_allele_definitions,
 )
 
 
@@ -180,6 +180,7 @@ def render_pharmacogenomics(dna_data):
             results = []
 
             # Get rsIDs to check
+            pgx_snps = get_pgx_snps()
             rsids_to_check = list(pgx_snps.keys())
 
             # Get live PharmGKB data if available
@@ -258,6 +259,7 @@ def render_pharmacogenomics(dna_data):
     st.subheader("2.3. Adverse Drug Reaction Sensitivity")
     if st.button("Run Adverse Drug Reaction Sensitivity Analysis"):
         results = []
+        adverse_reaction_snps = get_adverse_reaction_snps()
         for rsid, info in adverse_reaction_snps.items():
             user_genotype = dna_data[dna_data.index == rsid]
             interpretation = "Not in data"
